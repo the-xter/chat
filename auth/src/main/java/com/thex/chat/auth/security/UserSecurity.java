@@ -8,13 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class UserSecurity {
-
     private final UserRepository userRepository;
 
-    public boolean isOwner(Authentication authentication, Long userId) {
+    public boolean isOwner(Authentication authentication, Integer userId) {
         String username = authentication.getName();
         return userRepository.findById(userId)
-                .map(user -> user.getUsername().equals(username))
-                .orElse(false);
+            .map(user -> user.getUsername().equals(username))
+            .orElse(false);
     }
 }

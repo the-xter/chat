@@ -19,30 +19,30 @@ public class UserService {
 
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(UserResponse::from)
-                .toList();
+            .map(UserResponse::from)
+            .toList();
     }
 
-    public UserResponse getUserById(Long id) {
+    public UserResponse getUserById(Integer id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return UserResponse.from(user);
     }
 
-    public UserResponse updateUser(Long id, UpdateUserRequest request) {
+    public UserResponse updateUser(Integer id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (request.username() != null) {
             if (userRepository.existsByUsername(request.username()) &&
-                    !user.getUsername().equals(request.username())) {
+                !user.getUsername().equals(request.username())) {
                 throw new IllegalArgumentException("Username is already taken");
             }
             user.setUsername(request.username());
         }
         if (request.email() != null) {
             if (userRepository.existsByEmail(request.email()) &&
-                    !user.getEmail().equals(request.email())) {
+                !user.getEmail().equals(request.email())) {
                 throw new IllegalArgumentException("Email is already in use");
             }
             user.setEmail(request.email());
@@ -55,7 +55,7 @@ public class UserService {
         return UserResponse.from(user);
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(Integer id) {
         if (!userRepository.existsById(id)) {
             throw new IllegalArgumentException("User not found");
         }

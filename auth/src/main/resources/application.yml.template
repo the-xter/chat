@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: YOUR_DB_USERNAME
+    password: YOUR_DB_PASSWORD
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+app:
+  jwt:
+    secret: YOUR_BASE64_SECRET_KEY_AT_LEAST_256_BITS_LONG
+    expiration-ms: 86400000  # 24 hours
+
+server:
+  port: 8080

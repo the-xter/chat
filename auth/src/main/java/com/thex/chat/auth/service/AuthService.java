@@ -34,15 +34,15 @@ public class AuthService {
         }
 
         User user = User.builder()
-                .username(request.username())
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .roles(Set.of(Role.USER))
-                .build();
+            .username(request.username())
+            .email(request.email())
+            .password(passwordEncoder.encode(request.password()))
+            .roles(Set.of(Role.USER))
+            .build();
         userRepository.save(user);
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+            new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
         String token = jwtTokenProvider.generateToken(authentication);
@@ -51,7 +51,7 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+            new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
         String token = jwtTokenProvider.generateToken(authentication);

@@ -1,6 +1,7 @@
 package com.thex.chat.auth.dto;
 
 public record AuthResponse(
-        String token,
-        String username
-) {}
+    String token,
+    String username
+) {
+}
