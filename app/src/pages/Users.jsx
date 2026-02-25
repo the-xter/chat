@@ -15,7 +15,7 @@ export default function Users() {
     const fetchUsers = async () => {
         try {
             const res = await api.get('/users');
-            setUsers(res.data);
+            setUsers(Array.isArray(res.data) ? res.data : []);
             setError('');
         } catch (err) {
             if (err.response?.status === 403) {
