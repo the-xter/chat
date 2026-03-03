@@ -1,6 +1,7 @@
 import {createContext, useContext, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import api from '../api/axios';
+import {AUTH} from '../api/endpoints';
 
 const AuthContext = createContext(null);
 
@@ -14,7 +15,7 @@ export function AuthProvider({children}) {
     const navigate = useNavigate();
 
     const login = async (username, password) => {
-        const res = await api.post('/auth/login', {username, password});
+        const res = await api.post(AUTH.LOGIN, {username, password});
         const {token, username: name} = res.data;
         localStorage.setItem('token', token);
         localStorage.setItem('username', name);
@@ -23,7 +24,7 @@ export function AuthProvider({children}) {
     };
 
     const signup = async (username, email, password) => {
-        const res = await api.post('/auth/signup', {username, email, password});
+        const res = await api.post(AUTH.SIGNUP, {username, email, password});
         const {token, username: name} = res.data;
         localStorage.setItem('token', token);
         localStorage.setItem('username', name);

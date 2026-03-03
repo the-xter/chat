@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useAuth} from '../context/AuthContext';
 import api from '../api/axios';
+import {AUTH} from '../api/endpoints';
 
 export default function Users() {
     const {user, logout} = useAuth();
@@ -73,7 +74,7 @@ export default function Users() {
         e.preventDefault();
         setError('');
         try {
-            await api.post('/auth/signup', createForm);
+            await api.post(AUTH.SIGNUP, createForm);
             setCreateForm({username: '', email: '', password: ''});
             setShowCreate(false);
             fetchUsers();
