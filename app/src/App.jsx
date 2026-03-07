@@ -2,6 +2,7 @@ import {Routes, Route, Navigate} from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Users from './pages/Users';
+import Chat from './pages/Chat';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
@@ -9,6 +10,7 @@ export default function App() {
         <Routes>
             <Route path="/login" element={<Login/>}/>
             <Route path="/signup" element={<Signup/>}/>
+            <Route path="/chat" element={<Chat/>}/>
             <Route
                 path="/users"
                 element={
@@ -17,7 +19,7 @@ export default function App() {
                     </ProtectedRoute>
                 }
             />
-            <Route path="*" element={<Navigate to="/login" replace/>}/>
+            <Route path="*" element={<Navigate to="/chat" replace/>}/>
         </Routes>
     );
 }
