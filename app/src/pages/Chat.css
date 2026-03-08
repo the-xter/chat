@@ -1,0 +1,69 @@
+.connection-status {
+    margin: 12px 0;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.visitors-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.visitors-panel {
+    flex: 1;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+}
+
+.visitors-panel h3 {
+    margin-bottom: 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+.visitors-list {
+    list-style: none;
+}
+
+.visitor {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.visitor:last-child {
+    border-bottom: none;
+}
+
+.visitor.empty {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.visitor.registered::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    margin-right: 8px;
+}
+
+.visitor.guest::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #94a3b8;
+    margin-right: 8px;
+}

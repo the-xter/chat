@@ -5,6 +5,7 @@ import Users from './pages/Users';
 import Chat from './pages/Chat';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
+import {CometDProvider} from './context/CometDContext';
 
 export default function App() {
     return (
@@ -13,7 +14,11 @@ export default function App() {
             <Routes>
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/signup" element={<Signup/>}/>
-                <Route path="/chat" element={<Chat/>}/>
+                <Route path="/chat" element={
+                    <CometDProvider>
+                        <Chat/>
+                    </CometDProvider>
+                }/>
                 <Route
                     path="/users"
                     element={
