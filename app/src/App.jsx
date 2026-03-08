@@ -4,22 +4,26 @@ import Signup from './pages/Signup';
 import Users from './pages/Users';
 import Chat from './pages/Chat';
 import ProtectedRoute from './components/ProtectedRoute';
+import Header from './components/Header';
 
 export default function App() {
     return (
-        <Routes>
-            <Route path="/login" element={<Login/>}/>
-            <Route path="/signup" element={<Signup/>}/>
-            <Route path="/chat" element={<Chat/>}/>
-            <Route
-                path="/users"
-                element={
-                    <ProtectedRoute>
-                        <Users/>
-                    </ProtectedRoute>
-                }
-            />
-            <Route path="*" element={<Navigate to="/chat" replace/>}/>
-        </Routes>
+        <>
+            <Header/>
+            <Routes>
+                <Route path="/login" element={<Login/>}/>
+                <Route path="/signup" element={<Signup/>}/>
+                <Route path="/chat" element={<Chat/>}/>
+                <Route
+                    path="/users"
+                    element={
+                        <ProtectedRoute>
+                            <Users/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="*" element={<Navigate to="/chat" replace/>}/>
+            </Routes>
+        </>
     );
 }

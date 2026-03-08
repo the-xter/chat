@@ -1,10 +1,8 @@
 import {useEffect, useState} from 'react';
-import {useAuth} from '../context/AuthContext';
 import api from '../api/axios';
 import {AUTH} from '../api/endpoints';
 
 export default function Users() {
-    const {user, logout} = useAuth();
     const [users, setUsers] = useState([]);
     const [error, setError] = useState('');
     const [editingId, setEditingId] = useState(null);
@@ -91,10 +89,6 @@ export default function Users() {
         <div className="page">
             <div className="page-header">
                 <h1>Users</h1>
-                <div className="header-actions">
-                    <span>Logged in as <strong>{user.username}</strong></span>
-                    <button onClick={logout} className="btn-secondary">Logout</button>
-                </div>
             </div>
 
             {error && <div className="error">{error}</div>}
