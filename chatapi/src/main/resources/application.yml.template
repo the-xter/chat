@@ -1,0 +1,6 @@
+server:
+  port: 8081
+
+app:
+  jwt:
+    secret: YOUR_BASE64_SECRET_KEY_AT_LEAST_256_BITS_LONG

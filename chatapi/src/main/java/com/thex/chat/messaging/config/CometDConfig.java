@@ -1,6 +1,6 @@
-package com.thex.chat.auth.chat;
+package com.thex.chat.messaging.config;
 
-import jakarta.servlet.ServletContext;
+import com.thex.chat.messaging.chat.JwtHandshakePolicy;
 import org.cometd.bayeux.server.BayeuxServer;
 import org.cometd.server.BayeuxServerImpl;
 import org.cometd.server.http.jakarta.CometDServlet;

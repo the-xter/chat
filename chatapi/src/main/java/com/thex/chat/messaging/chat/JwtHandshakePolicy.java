@@ -1,7 +1,8 @@
-package com.thex.chat.auth.chat;
+package com.thex.chat.messaging.chat;
 
-import com.thex.chat.auth.security.JwtTokenProvider;
+import com.thex.chat.messaging.security.JwtTokenValidator;
 import lombok.RequiredArgsConstructor;
+import org.cometd.bayeux.Promise;
 import org.cometd.bayeux.server.*;
 import org.cometd.server.DefaultSecurityPolicy;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ public class JwtHandshakePolicy extends DefaultSecurityPolicy {
     public static final String SESSION_ATTR_USERNAME = "username";
     public static final String SESSION_ATTR_AUTHENTICATED = "authenticated";
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenValidator jwtTokenValidator;
 
     @Override
     public void canHandshake(BayeuxServer server,
@@ -44,8 +45,8 @@ public class JwtHandshakePolicy extends DefaultSecurityPolicy {
             return;
         }
 
-        if (jwtTokenProvider.validateToken(token)) {
-            String username = jwtTokenProvider.getUsernameFromToken(token);
+        if (jwtTokenValidator.validateToken(token)) {
+            String username = jwtTokenValidator.getUsernameFromToken(token);
             session.setAttribute(SESSION_ATTR_AUTHENTICATED, true);
             session.setAttribute(SESSION_ATTR_USERNAME, username);
             promise.succeed(true);

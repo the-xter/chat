@@ -1,4 +1,4 @@
-package com.thex.chat.auth.chat;
+package com.thex.chat.messaging.chat;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
