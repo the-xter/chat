@@ -1,6 +1,5 @@
 package com.thex.chat.messaging.chat;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cometd.bayeux.Promise;
@@ -17,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VisitorService implements BayeuxServer.SessionListener {
 
     private final BayeuxServer bayeuxServer;
+    private volatile LocalSession localSession;
 
     private final Map<String, String> registeredVisitors = new ConcurrentHashMap<>();
     private final Map<String, String> guestVisitors = new ConcurrentHashMap<>();
@@ -24,8 +24,9 @@ public class VisitorService implements BayeuxServer.SessionListener {
 
     public static final String CHANNEL_VISITORS = "/visitors";
 
-    @PostConstruct
-    public void init() {
+    public void start() {
+        localSession = bayeuxServer.newLocalSession("visitor-service");
+        localSession.handshake();
         bayeuxServer.addListener(this);
         bayeuxServer.createChannelIfAbsent(CHANNEL_VISITORS);
     }
@@ -75,7 +76,7 @@ public class VisitorService implements BayeuxServer.SessionListener {
             Map<String, Object> data = new HashMap<>();
             data.put("registered", new ArrayList<>(registeredVisitors.values()));
             data.put("guests", new ArrayList<>(guestVisitors.values()));
-            channel.publish(bayeuxServer.newLocalSession("visitor-service"), data, Promise.noop());
+            channel.publish(localSession, data, Promise.noop());
         }
     }
 
