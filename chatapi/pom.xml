@@ -27,6 +27,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
         </dependency>
 
         <!-- Lombok -->
@@ -55,6 +65,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Jetty util-ajax (required by CometD, not in Jetty starter) -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util-ajax</artifactId>
+        </dependency>
+
         <!-- CometD -->
         <dependency>
             <groupId>org.cometd.java</groupId>
@@ -68,13 +84,8 @@
         </dependency>
         <dependency>
             <groupId>org.cometd.java</groupId>
-            <artifactId>cometd-java-server-websocket-jakarta</artifactId>
+            <artifactId>cometd-java-server-websocket-jetty</artifactId>
             <version>${cometd.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.websocket</groupId>
-            <artifactId>jakarta.websocket-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Test -->
