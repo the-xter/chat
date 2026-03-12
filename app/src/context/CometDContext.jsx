@@ -13,6 +13,7 @@ export function CometDProvider({children}) {
 
     const connect = useCallback(() => {
         if (cometdRef.current) return;
+        setError(null);
 
         const cometd = new CometD();
         cometdRef.current = cometd;
@@ -51,6 +52,7 @@ export function CometDProvider({children}) {
             cometdRef.current.disconnect();
             cometdRef.current = null;
             setConnected(false);
+            setError(null);
             setVisitors({registered: [], guests: []});
         }
     }, []);
