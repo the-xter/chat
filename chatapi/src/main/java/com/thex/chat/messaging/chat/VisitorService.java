@@ -1,5 +1,6 @@
 package com.thex.chat.messaging.chat;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cometd.bayeux.Promise;
@@ -16,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VisitorService implements BayeuxServer.SessionListener {
 
     private final BayeuxServer bayeuxServer;
-    private volatile LocalSession localSession;
 
     private final Map<String, String> registeredVisitors = new ConcurrentHashMap<>();
     private final Map<String, String> guestVisitors = new ConcurrentHashMap<>();
@@ -24,21 +24,20 @@ public class VisitorService implements BayeuxServer.SessionListener {
 
     public static final String CHANNEL_VISITORS = "/visitors";
 
-    public void start() {
-        localSession = bayeuxServer.newLocalSession("visitor-service");
-        localSession.handshake();
+    @PostConstruct
+    public void init() {
         bayeuxServer.addListener(this);
         bayeuxServer.createChannelIfAbsent(CHANNEL_VISITORS);
     }
 
     @Override
     public void sessionAdded(ServerSession session, ServerMessage message) {
-        if (session.isLocalSession()) return;
+        if (session.isLocalSession()) {
+            return;
+        }
 
-        Boolean authenticated = (Boolean) session.getAttribute(
-                JwtHandshakePolicy.SESSION_ATTR_AUTHENTICATED);
-        String username = (String) session.getAttribute(
-                JwtHandshakePolicy.SESSION_ATTR_USERNAME);
+        Boolean authenticated = (Boolean) session.getAttribute(JwtHandshakePolicy.SESSION_ATTR_AUTHENTICATED);
+        String username = (String) session.getAttribute(JwtHandshakePolicy.SESSION_ATTR_USERNAME);
 
         if (Boolean.TRUE.equals(authenticated) && username != null) {
             registeredVisitors.put(session.getId(), username);
@@ -49,8 +48,7 @@ public class VisitorService implements BayeuxServer.SessionListener {
             session.setAttribute(JwtHandshakePolicy.SESSION_ATTR_USERNAME, guestId);
             log.info("Guest connected: {}", guestId);
         }
-
-        broadcastVisitors();
+        broadcastVisitors(session);
     }
 
     @Override
@@ -66,17 +64,16 @@ public class VisitorService implements BayeuxServer.SessionListener {
                 log.info("Guest disconnected: {}", removed);
             }
         }
-
-        broadcastVisitors();
+        broadcastVisitors(session);
     }
 
-    private void broadcastVisitors() {
+    private void broadcastVisitors(ServerSession session) {
         ServerChannel channel = bayeuxServer.getChannel(CHANNEL_VISITORS);
         if (channel != null) {
             Map<String, Object> data = new HashMap<>();
             data.put("registered", new ArrayList<>(registeredVisitors.values()));
             data.put("guests", new ArrayList<>(guestVisitors.values()));
-            channel.publish(localSession, data, Promise.noop());
+            channel.publish(session, data, Promise.noop());
         }
     }
 

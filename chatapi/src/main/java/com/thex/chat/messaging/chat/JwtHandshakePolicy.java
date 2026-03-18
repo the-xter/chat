@@ -2,6 +2,7 @@ package com.thex.chat.messaging.chat;
 
 import com.thex.chat.messaging.security.JwtTokenValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.cometd.bayeux.Promise;
 import org.cometd.bayeux.server.*;
 import org.cometd.server.DefaultSecurityPolicy;
@@ -11,18 +12,20 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtHandshakePolicy extends DefaultSecurityPolicy {
-
     public static final String SESSION_ATTR_USERNAME = "username";
     public static final String SESSION_ATTR_AUTHENTICATED = "authenticated";
 
     private final JwtTokenValidator jwtTokenValidator;
 
     @Override
-    public void canHandshake(BayeuxServer server,
-                             ServerSession session,
-                             ServerMessage message,
-                             Promise<Boolean> promise) {
+    public void canHandshake(
+        BayeuxServer server,
+        ServerSession session,
+        ServerMessage message,
+        Promise<Boolean> promise
+    ) {
         if (session.isLocalSession()) {
             promise.succeed(true);
             return;
@@ -57,5 +60,11 @@ public class JwtHandshakePolicy extends DefaultSecurityPolicy {
             reply.put("error", "401::Invalid authentication token");
             promise.succeed(false);
         }
+    }
+
+    @Override
+    public boolean canCreate(BayeuxServer server, ServerSession session, String channelId, ServerMessage message) {
+        log.debug("----- canCreate");
+        return super.canCreate(server, session, channelId, message);
     }
 }

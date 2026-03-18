@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.2</version>
+        <version>4.0.3</version>
         <relativePath/>
     </parent>
 
@@ -18,9 +18,9 @@
     <description>CometD chat API service for chat application</description>
 
     <properties>
-        <java.version>21</java.version>
-        <jjwt.version>0.12.6</jjwt.version>
-        <cometd.version>8.0.11</cometd.version>
+        <java.version>23</java.version>
+        <jjwt.version>0.13.0</jjwt.version>
+        <cometd.version>9.0.0</cometd.version>
     </properties>
 
     <dependencies>
@@ -65,30 +65,25 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Jetty extras (required by CometD, not in Jetty starter) -->
+        <!-- Jetty util-ajax (required by CometD, not in Jetty starter) -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util-ajax</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty.ee10.websocket</groupId>
-            <artifactId>jetty-ee10-websocket-jetty-server</artifactId>
+            <groupId>org.eclipse.jetty.ee11.websocket</groupId>
+            <artifactId>jetty-ee11-websocket-jakarta-server</artifactId>
         </dependency>
 
         <!-- CometD -->
         <dependency>
             <groupId>org.cometd.java</groupId>
-            <artifactId>cometd-java-api-server</artifactId>
+            <artifactId>cometd-java-server-websocket-jakarta</artifactId>
             <version>${cometd.version}</version>
         </dependency>
         <dependency>
             <groupId>org.cometd.java</groupId>
             <artifactId>cometd-java-server-http-jakarta</artifactId>
-            <version>${cometd.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.cometd.java</groupId>
-            <artifactId>cometd-java-server-websocket-jetty</artifactId>
             <version>${cometd.version}</version>
         </dependency>
 
