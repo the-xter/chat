@@ -1,16 +1,10 @@
-import {useEffect} from 'react';
 import {useCometD} from '../context/CometDContext';
 import {useAuth} from '../context/AuthContext';
 import './Chat.css';
 
 export default function Chat() {
     const {user} = useAuth();
-    const {connect, disconnect, connected, error, visitors} = useCometD();
-
-    useEffect(() => {
-        connect();
-        return () => disconnect();
-    }, [connect, disconnect]);
+    const {connected, error, visitors} = useCometD();
 
     if (error) {
         return (
