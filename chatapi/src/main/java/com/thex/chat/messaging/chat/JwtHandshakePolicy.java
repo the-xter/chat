@@ -20,51 +20,35 @@ public class JwtHandshakePolicy extends DefaultSecurityPolicy {
     private final JwtTokenValidator jwtTokenValidator;
 
     @Override
-    public void canHandshake(
-        BayeuxServer server,
-        ServerSession session,
-        ServerMessage message,
-        Promise<Boolean> promise
-    ) {
+    public boolean canHandshake(BayeuxServer server, ServerSession session, ServerMessage message) {
         if (session.isLocalSession()) {
-            promise.succeed(true);
-            return;
+            return true;
         }
 
-        Map<String, Object> ext = message.getExt();
         String token = null;
-        if (ext != null) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> auth = (Map<String, Object>) ext.get("auth");
-            if (auth != null) {
-                token = (String) auth.get("token");
-            }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> auth = (Map<String, Object>) message.get("auth");
+        if (auth != null) {
+            token = (String) auth.get("token");
         }
 
         if (token == null || token.isBlank()) {
             session.setAttribute(SESSION_ATTR_AUTHENTICATED, false);
             session.setAttribute(SESSION_ATTR_USERNAME, null);
-            promise.succeed(true);
-            return;
+            return true;
         }
 
         if (jwtTokenValidator.validateToken(token)) {
             String username = jwtTokenValidator.getUsernameFromToken(token);
             session.setAttribute(SESSION_ATTR_AUTHENTICATED, true);
             session.setAttribute(SESSION_ATTR_USERNAME, username);
-            promise.succeed(true);
+            return true;
         } else {
             ServerMessage.Mutable reply = message.getAssociated();
             Map<String, Object> advice = reply.getAdvice(true);
             advice.put("reconnect", "none");
             reply.put("error", "401::Invalid authentication token");
-            promise.succeed(false);
+            return false;
         }
-    }
-
-    @Override
-    public boolean canCreate(BayeuxServer server, ServerSession session, String channelId, ServerMessage message) {
-        log.debug("----- canCreate");
-        return super.canCreate(server, session, channelId, message);
     }
 }
