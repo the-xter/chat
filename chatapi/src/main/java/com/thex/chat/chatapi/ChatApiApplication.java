@@ -1,12 +1,12 @@
-package com.thex.chat.messaging;
+package com.thex.chat.chatapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MessagingApplication {
+public class ChatApiApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MessagingApplication.class, args);
+        SpringApplication.run(ChatApiApplication.class, args);
     }
 }

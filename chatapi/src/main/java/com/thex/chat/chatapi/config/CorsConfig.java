@@ -1,4 +1,4 @@
-package com.thex.chat.messaging.config;
+package com.thex.chat.chatapi.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

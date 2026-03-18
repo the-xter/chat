@@ -1,6 +1,6 @@
-package com.thex.chat.messaging.config;
+package com.thex.chat.chatapi.config;
 
-import com.thex.chat.messaging.chat.JwtHandshakePolicy;
+import com.thex.chat.chatapi.chat.JwtHandshakePolicy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

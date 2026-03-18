@@ -1,4 +1,4 @@
-package com.thex.chat.messaging.security;
+package com.thex.chat.chatapi.security;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

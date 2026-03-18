@@ -1,4 +1,4 @@
-package com.thex.chat.messaging.chat;
+package com.thex.chat.chatapi.chat;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

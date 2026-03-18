@@ -1,9 +1,8 @@
-package com.thex.chat.messaging.chat;
+package com.thex.chat.chatapi.chat;
 
-import com.thex.chat.messaging.security.JwtTokenValidator;
+import com.thex.chat.chatapi.security.JwtTokenValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.cometd.bayeux.Promise;
 import org.cometd.bayeux.server.*;
 import org.cometd.server.DefaultSecurityPolicy;
 import org.springframework.stereotype.Component;
