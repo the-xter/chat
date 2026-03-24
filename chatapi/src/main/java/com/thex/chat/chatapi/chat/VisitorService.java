@@ -1,15 +1,19 @@
 package com.thex.chat.chatapi.chat;
 
+import com.thex.chat.chatapi.config.RabbitConfig;
+import com.thex.chat.chatapi.messaging.SessionEvent;
+import com.thex.chat.chatapi.messaging.VisitorsUpdate;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cometd.bayeux.Promise;
+import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.server.*;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -17,10 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VisitorService implements BayeuxServer.SessionListener {
 
     private final BayeuxServer bayeuxServer;
+    private final RabbitTemplate rabbitTemplate;
 
-    private final Map<String, String> registeredVisitors = new ConcurrentHashMap<>();
-    private final Map<String, String> guestVisitors = new ConcurrentHashMap<>();
-    private final AtomicInteger guestCounter = new AtomicInteger(0);
+    private ClientSession localSession;
 
     public static final String CHANNEL_VISITORS = "/visitors";
 
@@ -28,60 +31,53 @@ public class VisitorService implements BayeuxServer.SessionListener {
     public void init() {
         bayeuxServer.addListener(this);
         bayeuxServer.createChannelIfAbsent(CHANNEL_VISITORS);
+        var local = bayeuxServer.newLocalSession("visitor-updater");
+        local.handshake();
+        this.localSession = local;
     }
 
     @Override
     public void sessionAdded(ServerSession session, ServerMessage message) {
-        if (session.isLocalSession()) {
-            return;
-        }
+        if (session.isLocalSession()) return;
 
         Boolean authenticated = (Boolean) session.getAttribute(JwtHandshakePolicy.SESSION_ATTR_AUTHENTICATED);
         String username = (String) session.getAttribute(JwtHandshakePolicy.SESSION_ATTR_USERNAME);
 
-        if (Boolean.TRUE.equals(authenticated) && username != null) {
-            registeredVisitors.put(session.getId(), username);
-            log.info("Registered user connected: {}", username);
-        } else {
-            String guestId = "Guest-" + guestCounter.incrementAndGet();
-            guestVisitors.put(session.getId(), guestId);
-            session.setAttribute(JwtHandshakePolicy.SESSION_ATTR_USERNAME, guestId);
-            log.info("Guest connected: {}", guestId);
-        }
-        broadcastVisitors(session);
+        var event = new SessionEvent(
+                session.getId(),
+                "CONNECTED",
+                Boolean.TRUE.equals(authenticated),
+                username
+        );
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "session.connected", event);
+        log.info("Published session.connected for {}", username != null ? username : "guest");
     }
 
     @Override
     public void sessionRemoved(ServerSession session, ServerMessage message, boolean timeout) {
         if (session.isLocalSession()) return;
 
-        String removed = registeredVisitors.remove(session.getId());
-        if (removed != null) {
-            log.info("Registered user disconnected: {}", removed);
-        } else {
-            removed = guestVisitors.remove(session.getId());
-            if (removed != null) {
-                log.info("Guest disconnected: {}", removed);
-            }
-        }
-        broadcastVisitors(session);
+        var event = new SessionEvent(
+                session.getId(),
+                "DISCONNECTED",
+                false,
+                null
+        );
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "session.disconnected", event);
+        log.info("Published session.disconnected for session {}", session.getId());
     }
 
-    private void broadcastVisitors(ServerSession session) {
+    @RabbitListener(queues = RabbitConfig.VISITOR_UPDATES_QUEUE)
+    public void onVisitorsUpdated(VisitorsUpdate update) {
         ServerChannel channel = bayeuxServer.getChannel(CHANNEL_VISITORS);
         if (channel != null) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("registered", new ArrayList<>(registeredVisitors.values()));
-            data.put("guests", new ArrayList<>(guestVisitors.values()));
-            channel.publish(session, data, Promise.noop());
+            Map<String, Object> data = Map.of(
+                    "registered", update.registered(),
+                    "guests", update.guests()
+            );
+            channel.publish(localSession, data, Promise.noop());
+            log.info("Broadcast visitor update: {} registered, {} guests",
+                    update.registered().size(), update.guests().size());
         }
-    }
-
-    public List<String> getRegisteredVisitors() {
-        return new ArrayList<>(registeredVisitors.values());
-    }
-
-    public List<String> getGuestVisitors() {
-        return new ArrayList<>(guestVisitors.values());
     }
 }
