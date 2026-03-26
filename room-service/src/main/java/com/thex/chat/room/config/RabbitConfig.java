@@ -1,9 +1,8 @@
-package com.thex.chat.chatapi.config;
+package com.thex.chat.room.config;
 
-import com.thex.chat.chatapi.messaging.RoomEvent;
-import com.thex.chat.chatapi.messaging.RoomUpdate;
-import com.thex.chat.chatapi.messaging.SessionEvent;
-import com.thex.chat.chatapi.messaging.VisitorsUpdate;
+import com.thex.chat.room.messaging.RoomEvent;
+import com.thex.chat.room.messaging.RoomUpdate;
+import com.thex.chat.room.messaging.SessionEvent;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -20,8 +19,8 @@ import java.util.Map;
 public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
-    public static final String VISITOR_UPDATES_QUEUE = "chatapi.visitor-updates";
-    public static final String ROOM_UPDATES_QUEUE = "chatapi.room-updates";
+    public static final String SESSION_EVENTS_QUEUE = "room-service.session-events";
+    public static final String ROOM_EVENTS_QUEUE = "room-service.room-events";
 
     @Bean
     public TopicExchange chatEventsExchange() {
@@ -29,23 +28,23 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue visitorUpdatesQueue() {
-        return new Queue(VISITOR_UPDATES_QUEUE, true);
+    public Queue sessionEventsQueue() {
+        return new Queue(SESSION_EVENTS_QUEUE, true);
     }
 
     @Bean
-    public Queue roomUpdatesQueue() {
-        return new Queue(ROOM_UPDATES_QUEUE, true);
+    public Queue roomEventsQueue() {
+        return new Queue(ROOM_EVENTS_QUEUE, true);
     }
 
     @Bean
-    public Binding visitorUpdatesBinding(Queue visitorUpdatesQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(visitorUpdatesQueue).to(chatEventsExchange).with("visitors.updated");
+    public Binding sessionEventsBinding(Queue sessionEventsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(sessionEventsQueue).to(chatEventsExchange).with("session.*");
     }
 
     @Bean
-    public Binding roomUpdatesBinding(Queue roomUpdatesQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomUpdatesQueue).to(chatEventsExchange).with("room.updated");
+    public Binding roomEventsBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.*");
     }
 
     @Bean
@@ -54,7 +53,6 @@ public class RabbitConfig {
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
                 "SessionEvent", SessionEvent.class,
-                "VisitorsUpdate", VisitorsUpdate.class,
                 "RoomEvent", RoomEvent.class,
                 "RoomUpdate", RoomUpdate.class
         ));
