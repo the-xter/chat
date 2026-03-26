@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>com.thex.chat</groupId>
-    <artifactId>room-service</artifactId>
+    <artifactId>room</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>room-service</name>
+    <name>room</name>
     <description>Room management microservice for chat application</description>
 
     <properties>

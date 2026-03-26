@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>com.thex.chat</groupId>
-    <artifactId>visitor-service</artifactId>
+    <artifactId>visitor</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>visitor-service</name>
+    <name>visitor</name>
     <description>Visitor tracking microservice for chat application</description>
 
     <properties>

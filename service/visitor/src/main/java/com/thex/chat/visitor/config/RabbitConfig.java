@@ -18,7 +18,7 @@ import java.util.Map;
 public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
-    public static final String SESSION_EVENTS_QUEUE = "visitor-service.session-events";
+    public static final String SESSION_EVENTS_QUEUE = "visitor.session-events";
 
     @Bean
     public TopicExchange chatEventsExchange() {
