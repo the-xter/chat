@@ -1,4 +1,4 @@
-package com.thex.chat.visitor.messaging;
+package com.thex.chat.connection.messaging;
 
 public record SessionEvent(
         String sessionId,

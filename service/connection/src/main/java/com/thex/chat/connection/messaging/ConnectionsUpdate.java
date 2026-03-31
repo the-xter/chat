@@ -1,8 +1,8 @@
-package com.thex.chat.visitor.messaging;
+package com.thex.chat.connection.messaging;
 
 import java.util.List;
 
-public record VisitorsUpdate(
+public record ConnectionsUpdate(
         List<String> registered,
         List<String> guests
 ) {}

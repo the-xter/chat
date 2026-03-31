@@ -2,7 +2,7 @@ package com.thex.chat.chatapi.messaging;
 
 import java.util.List;
 
-public record VisitorsUpdate(
+public record ConnectionsUpdate(
         List<String> registered,
         List<String> guests
 ) {}

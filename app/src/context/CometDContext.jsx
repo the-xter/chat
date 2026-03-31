@@ -8,7 +8,7 @@ export function CometDProvider({children}) {
     const {user} = useAuth();
     const [connected, setConnected] = useState(false);
     const [error, setError] = useState(null);
-    const [visitors, setVisitors] = useState({registered: [], guests: []});
+    const [connections, setConnections] = useState({registered: [], guests: []});
     const [roomMembers, setRoomMembers] = useState([]);
     const [currentRoom, setCurrentRoom] = useState(null);
 
@@ -43,8 +43,8 @@ export function CometDProvider({children}) {
                 if (cancelledRef.current) return;
                 if (reply.successful) {
                     setError(null);
-                    cometd.subscribe('/visitors', (message) => {
-                        if (!cancelledRef.current) setVisitors(message.data);
+                    cometd.subscribe('/connections', (message) => {
+                        if (!cancelledRef.current) setConnections(message.data);
                     });
                 } else {
                     setError(reply.error || 'Handshake failed');
@@ -61,7 +61,7 @@ export function CometDProvider({children}) {
             cometdRef.current = null;
             roomSubRef.current = null;
             setConnected(false);
-            setVisitors({registered: [], guests: []});
+            setConnections({registered: [], guests: []});
             setRoomMembers([]);
             setCurrentRoom(null);
         };
@@ -102,7 +102,7 @@ export function CometDProvider({children}) {
     }, [currentRoom]);
 
     return (
-        <CometDContext.Provider value={{connected, error, visitors, roomMembers, currentRoom, joinRoom, leaveRoom}}>
+        <CometDContext.Provider value={{connected, error, connections, roomMembers, currentRoom, joinRoom, leaveRoom}}>
             {children}
         </CometDContext.Provider>
     );

@@ -2,7 +2,7 @@ package com.thex.chat.chatapi.chat;
 
 import com.thex.chat.chatapi.config.RabbitConfig;
 import com.thex.chat.chatapi.messaging.SessionEvent;
-import com.thex.chat.chatapi.messaging.VisitorsUpdate;
+import com.thex.chat.chatapi.messaging.ConnectionsUpdate;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,20 +18,20 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class VisitorService implements BayeuxServer.SessionListener {
+public class ConnectionService implements BayeuxServer.SessionListener {
 
     private final BayeuxServer bayeuxServer;
     private final RabbitTemplate rabbitTemplate;
 
     private ClientSession localSession;
 
-    public static final String CHANNEL_VISITORS = "/visitors";
+    public static final String CHANNEL_CONNECTIONS = "/connections";
 
     @PostConstruct
     public void init() {
         bayeuxServer.addListener(this);
-        bayeuxServer.createChannelIfAbsent(CHANNEL_VISITORS);
-        var local = bayeuxServer.newLocalSession("visitor-updater");
+        bayeuxServer.createChannelIfAbsent(CHANNEL_CONNECTIONS);
+        var local = bayeuxServer.newLocalSession("connection-updater");
         local.handshake();
         this.localSession = local;
     }
@@ -67,16 +67,16 @@ public class VisitorService implements BayeuxServer.SessionListener {
         log.info("Published session.disconnected for session {}", session.getId());
     }
 
-    @RabbitListener(queues = RabbitConfig.VISITOR_UPDATES_QUEUE)
-    public void onVisitorsUpdated(VisitorsUpdate update) {
-        ServerChannel channel = bayeuxServer.getChannel(CHANNEL_VISITORS);
+    @RabbitListener(queues = RabbitConfig.CONNECTION_UPDATES_QUEUE)
+    public void onConnectionsUpdated(ConnectionsUpdate update) {
+        ServerChannel channel = bayeuxServer.getChannel(CHANNEL_CONNECTIONS);
         if (channel != null) {
             Map<String, Object> data = Map.of(
                     "registered", update.registered(),
                     "guests", update.guests()
             );
             channel.publish(localSession, data, Promise.noop());
-            log.info("Broadcast visitor update: {} registered, {} guests",
+            log.info("Broadcast connection update: {} registered, {} guests",
                     update.registered().size(), update.guests().size());
         }
     }

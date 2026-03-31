@@ -1,12 +1,12 @@
-package com.thex.chat.visitor;
+package com.thex.chat.connection;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class VisitorServiceApplication {
+public class ConnectionServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(VisitorServiceApplication.class, args);
+        SpringApplication.run(ConnectionServiceApplication.class, args);
     }
 }

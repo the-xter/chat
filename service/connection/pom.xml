@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.thex.chat</groupId>
-    <artifactId>visitor</artifactId>
+    <artifactId>connection</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>visitor</name>
-    <description>Visitor tracking microservice for chat application</description>
+    <name>connection</name>
+    <description>Connection tracking microservice for chat application</description>
 
     <properties>
         <java.version>23</java.version>

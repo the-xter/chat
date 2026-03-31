@@ -6,7 +6,7 @@ const ROOM_ID = 'general';
 
 export default function Chat() {
     const {user} = useAuth();
-    const {connected, error, visitors, roomMembers, currentRoom, joinRoom, leaveRoom} = useCometD();
+    const {connected, error, connections, roomMembers, currentRoom, joinRoom, leaveRoom} = useCometD();
 
     if (error) {
         return (
@@ -56,26 +56,26 @@ export default function Chat() {
                 </div>
             )}
 
-            <div className="visitors-container">
-                <div className="visitors-panel">
-                    <h3>Registered Users ({visitors.registered.length})</h3>
-                    <ul className="visitors-list">
-                        {visitors.registered.map((name, i) => (
-                            <li key={i} className="visitor registered">{name}</li>
+            <div className="connections-container">
+                <div className="connections-panel">
+                    <h3>Registered Users ({connections.registered.length})</h3>
+                    <ul className="connections-list">
+                        {connections.registered.map((name, i) => (
+                            <li key={i} className="connection registered">{name}</li>
                         ))}
-                        {visitors.registered.length === 0 && (
-                            <li className="visitor empty">No registered users online</li>
+                        {connections.registered.length === 0 && (
+                            <li className="connection empty">No registered users online</li>
                         )}
                     </ul>
                 </div>
-                <div className="visitors-panel">
-                    <h3>Guests ({visitors.guests.length})</h3>
-                    <ul className="visitors-list">
-                        {visitors.guests.map((name, i) => (
-                            <li key={i} className="visitor guest">{name}</li>
+                <div className="connections-panel">
+                    <h3>Guests ({connections.guests.length})</h3>
+                    <ul className="connections-list">
+                        {connections.guests.map((name, i) => (
+                            <li key={i} className="connection guest">{name}</li>
                         ))}
-                        {visitors.guests.length === 0 && (
-                            <li className="visitor empty">No guests online</li>
+                        {connections.guests.length === 0 && (
+                            <li className="connection empty">No guests online</li>
                         )}
                     </ul>
                 </div>

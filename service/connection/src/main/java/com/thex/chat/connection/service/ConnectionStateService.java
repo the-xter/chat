@@ -1,8 +1,8 @@
-package com.thex.chat.visitor.service;
+package com.thex.chat.connection.service;
 
-import com.thex.chat.visitor.config.RabbitConfig;
-import com.thex.chat.visitor.messaging.SessionEvent;
-import com.thex.chat.visitor.messaging.VisitorsUpdate;
+import com.thex.chat.connection.config.RabbitConfig;
+import com.thex.chat.connection.messaging.SessionEvent;
+import com.thex.chat.connection.messaging.ConnectionsUpdate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -17,12 +17,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class VisitorStateService {
+public class ConnectionStateService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    private final Map<String, String> registeredVisitors = new ConcurrentHashMap<>();
-    private final Map<String, String> guestVisitors = new ConcurrentHashMap<>();
+    private final Map<String, String> registeredConnections = new ConcurrentHashMap<>();
+    private final Map<String, String> guestConnections = new ConcurrentHashMap<>();
     private final AtomicInteger guestCounter = new AtomicInteger(0);
 
     @RabbitListener(queues = RabbitConfig.SESSION_EVENTS_QUEUE)
@@ -32,39 +32,39 @@ public class VisitorStateService {
             case "DISCONNECTED" -> handleDisconnected(event);
             default -> log.warn("Unknown event type: {}", event.eventType());
         }
-        publishVisitorUpdate();
+        publishConnectionUpdate();
     }
 
     private void handleConnected(SessionEvent event) {
         if (event.authenticated() && event.username() != null) {
-            registeredVisitors.put(event.sessionId(), event.username());
+            registeredConnections.put(event.sessionId(), event.username());
             log.info("Registered user connected: {}", event.username());
         } else {
             String guestId = "Guest-" + guestCounter.incrementAndGet();
-            guestVisitors.put(event.sessionId(), guestId);
+            guestConnections.put(event.sessionId(), guestId);
             log.info("Guest connected: {}", guestId);
         }
     }
 
     private void handleDisconnected(SessionEvent event) {
-        String removed = registeredVisitors.remove(event.sessionId());
+        String removed = registeredConnections.remove(event.sessionId());
         if (removed != null) {
             log.info("Registered user disconnected: {}", removed);
         } else {
-            removed = guestVisitors.remove(event.sessionId());
+            removed = guestConnections.remove(event.sessionId());
             if (removed != null) {
                 log.info("Guest disconnected: {}", removed);
             }
         }
     }
 
-    private void publishVisitorUpdate() {
-        var update = new VisitorsUpdate(
-                new ArrayList<>(registeredVisitors.values()),
-                new ArrayList<>(guestVisitors.values())
+    private void publishConnectionUpdate() {
+        var update = new ConnectionsUpdate(
+                new ArrayList<>(registeredConnections.values()),
+                new ArrayList<>(guestConnections.values())
         );
-        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "visitors.updated", update);
-        log.info("Published visitors.updated: {} registered, {} guests",
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "connections.updated", update);
+        log.info("Published connections.updated: {} registered, {} guests",
                 update.registered().size(), update.guests().size());
     }
 }

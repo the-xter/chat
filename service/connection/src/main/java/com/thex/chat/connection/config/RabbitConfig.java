@@ -1,7 +1,7 @@
-package com.thex.chat.visitor.config;
+package com.thex.chat.connection.config;
 
-import com.thex.chat.visitor.messaging.SessionEvent;
-import com.thex.chat.visitor.messaging.VisitorsUpdate;
+import com.thex.chat.connection.messaging.SessionEvent;
+import com.thex.chat.connection.messaging.ConnectionsUpdate;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
-    public static final String SESSION_EVENTS_QUEUE = "visitor.session-events";
+    public static final String SESSION_EVENTS_QUEUE = "connection.session-events";
 
     @Bean
     public TopicExchange chatEventsExchange() {
@@ -41,7 +41,7 @@ public class RabbitConfig {
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
                 "SessionEvent", SessionEvent.class,
-                "VisitorsUpdate", VisitorsUpdate.class
+                "ConnectionsUpdate", ConnectionsUpdate.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();
