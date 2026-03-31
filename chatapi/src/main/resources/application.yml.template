@@ -5,6 +5,10 @@ app:
   jwt:
     secret: YOUR_BASE64_SECRET_KEY_AT_LEAST_256_BITS_LONG
 
+services:
+  connection:
+    url: http://localhost:8082
+
 spring:
   rabbitmq:
     host: localhost

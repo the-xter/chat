@@ -2,7 +2,6 @@ package com.thex.chat.chatapi.config;
 
 import com.thex.chat.chatapi.messaging.RoomEvent;
 import com.thex.chat.chatapi.messaging.RoomUpdate;
-import com.thex.chat.chatapi.messaging.SessionEvent;
 import com.thex.chat.chatapi.messaging.ConnectionsUpdate;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -40,7 +39,7 @@ public class RabbitConfig {
 
     @Bean
     public Binding connectionUpdatesBinding(Queue connectionUpdatesQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(connectionUpdatesQueue).to(chatEventsExchange).with("connections.updated");
+        return BindingBuilder.bind(connectionUpdatesQueue).to(chatEventsExchange).with("connection.*");
     }
 
     @Bean
@@ -53,7 +52,6 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-                "SessionEvent", SessionEvent.class,
                 "ConnectionsUpdate", ConnectionsUpdate.class,
                 "RoomEvent", RoomEvent.class,
                 "RoomUpdate", RoomUpdate.class

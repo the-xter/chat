@@ -1,9 +1,7 @@
 package com.thex.chat.connection.config;
 
-import com.thex.chat.connection.messaging.SessionEvent;
 import com.thex.chat.connection.messaging.ConnectionsUpdate;
-import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.DefaultClassMapper;
@@ -18,7 +16,6 @@ import java.util.Map;
 public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
-    public static final String SESSION_EVENTS_QUEUE = "connection.session-events";
 
     @Bean
     public TopicExchange chatEventsExchange() {
@@ -26,21 +23,10 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue sessionEventsQueue() {
-        return new Queue(SESSION_EVENTS_QUEUE, true);
-    }
-
-    @Bean
-    public Binding sessionEventsBinding(Queue sessionEventsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(sessionEventsQueue).to(chatEventsExchange).with("session.*");
-    }
-
-    @Bean
     public MessageConverter messageConverter() {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-                "SessionEvent", SessionEvent.class,
                 "ConnectionsUpdate", ConnectionsUpdate.class
         ));
         classMapper.setTrustedPackages("*");
@@ -54,14 +40,5 @@ public class RabbitConfig {
         var template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(messageConverter);
         return template;
-    }
-
-    @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-            ConnectionFactory connectionFactory, MessageConverter messageConverter) {
-        var factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setMessageConverter(messageConverter);
-        return factory;
     }
 }
