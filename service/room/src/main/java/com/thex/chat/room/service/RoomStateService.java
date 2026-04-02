@@ -1,14 +1,17 @@
 package com.thex.chat.room.service;
 
 import com.thex.chat.room.config.RabbitConfig;
+import com.thex.chat.room.dto.ConnectionInfo;
 import com.thex.chat.room.messaging.RoomEvent;
 import com.thex.chat.room.messaging.RoomUpdate;
 import com.thex.chat.room.messaging.SessionEvent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,14 +19,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class RoomStateService {
 
     private final RabbitTemplate rabbitTemplate;
+    private final RestClient restClient;
 
     private final Map<String, String> sessionNames = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> rooms = new ConcurrentHashMap<>();
     private final AtomicInteger guestCounter = new AtomicInteger(0);
+
+    public RoomStateService(RabbitTemplate rabbitTemplate,
+                            @Value("${services.connection.url}") String connectionServiceUrl) {
+        this.rabbitTemplate = rabbitTemplate;
+        this.restClient = RestClient.builder().baseUrl(connectionServiceUrl).build();
+    }
 
     @RabbitListener(queues = RabbitConfig.SESSION_EVENTS_QUEUE)
     public void handleSessionEvent(SessionEvent event) {
@@ -68,11 +77,22 @@ public class RoomStateService {
     }
 
     private void handleJoin(RoomEvent event) {
-        String name = sessionNames.get(event.sessionId());
-        if (name == null) {
-            log.warn("Join from unknown session: {}", event.sessionId());
+        ConnectionInfo connection = restClient.get()
+                .uri("/connections/{connectionId}", event.sessionId())
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                    log.warn("Connection not found for session: {}", event.sessionId());
+                })
+                .body(ConnectionInfo.class);
+
+        if (connection == null) {
+            log.warn("Join from unknown connection: {}", event.sessionId());
             return;
         }
+
+        String name = connection.user().name();
+        sessionNames.put(event.sessionId(), name);
+
         rooms.computeIfAbsent(event.roomId(), k -> ConcurrentHashMap.newKeySet())
                 .add(event.sessionId());
         log.info("{} joined room {}", name, event.roomId());

@@ -36,6 +36,10 @@ public class ConnectionStateService {
         publishEvent("connection.connected", connectionInfo);
     }
 
+    public ConnectionInfo getConnection(String connectionId) {
+        return connections.get(connectionId);
+    }
+
     public void disconnect(String connectionId) {
         ConnectionInfo removed = connections.remove(connectionId);
         if (removed != null) {

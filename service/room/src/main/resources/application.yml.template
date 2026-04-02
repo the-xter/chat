@@ -7,3 +7,7 @@ spring:
     port: 5672
     username: guest
     password: guest
+
+services:
+  connection:
+    url: http://localhost:8082
