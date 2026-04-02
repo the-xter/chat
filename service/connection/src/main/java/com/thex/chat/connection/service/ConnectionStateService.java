@@ -28,7 +28,7 @@ public class ConnectionStateService {
         UserInfo user = connectionInfo.user();
         if (user.type() == UserType.GUEST) {
             String guestName = "Guest-" + guestCounter.incrementAndGet();
-            user = new UserInfo(user.id(), guestName, UserType.GUEST);
+            user = new UserInfo(connectionInfo.connectionId(), guestName, UserType.GUEST);
             connectionInfo = new ConnectionInfo(connectionInfo.connectionId(), user);
         }
         connections.put(connectionInfo.connectionId(), connectionInfo);
