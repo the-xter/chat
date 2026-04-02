@@ -4,12 +4,14 @@ import com.thex.chat.chatapi.chat.JwtHandshakePolicy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.cometd.annotation.server.ServerAnnotationProcessor;
 import org.cometd.bayeux.server.BayeuxServer;
 import org.cometd.server.BayeuxServerImpl;
 import org.cometd.server.http.jakarta.CometDServlet;
 import org.cometd.server.websocket.jakarta.WebSocketTransport;
 import org.eclipse.jetty.ee11.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee11.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
+import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.boot.jetty.servlet.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -45,6 +47,30 @@ public class CometDConfig {
         bayeux.setOption("ws.cometdURLMapping", "/cometd/*");
         bayeux.setSecurityPolicy(jwtHandshakePolicy);
         return bayeux;
+    }
+
+    @Bean
+    public DestructionAwareBeanPostProcessor cometdAnnotationProcessor(BayeuxServer bayeuxServer) {
+        var processor = new ServerAnnotationProcessor(bayeuxServer);
+        return new DestructionAwareBeanPostProcessor() {
+            @Override
+            public Object postProcessBeforeInitialization(@NonNull Object bean, @NonNull String name) {
+                processor.processDependencies(bean);
+                processor.processConfigurations(bean);
+                processor.processCallbacks(bean);
+                return bean;
+            }
+
+            @Override
+            public Object postProcessAfterInitialization(@NonNull Object bean, @NonNull String name) {
+                return processor.process(bean) ? bean : bean;
+            }
+
+            @Override
+            public void postProcessBeforeDestruction(@NonNull Object bean, @NonNull String name) {
+                processor.deprocess(bean);
+            }
+        };
     }
 
     @Bean
