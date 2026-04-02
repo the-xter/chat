@@ -1,5 +1,6 @@
 package com.thex.chat.connection.controller;
 
+import com.thex.chat.connection.dto.ConnectionInfo;
 import com.thex.chat.connection.service.ConnectionStateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,14 +13,12 @@ public class ConnectionController {
     private final ConnectionStateService connectionStateService;
 
     @PostMapping
-    public void connect(@RequestBody ConnectionRequest request) {
-        connectionStateService.connect(request.sessionId(), request.authenticated(), request.username());
+    public void connect(@RequestBody ConnectionInfo connectionInfo) {
+        connectionStateService.connect(connectionInfo);
     }
 
-    @DeleteMapping("/{sessionId}")
-    public void disconnect(@PathVariable String sessionId) {
-        connectionStateService.disconnect(sessionId);
+    @DeleteMapping("/{connectionId}")
+    public void disconnect(@PathVariable String connectionId) {
+        connectionStateService.disconnect(connectionId);
     }
-
-    public record ConnectionRequest(String sessionId, boolean authenticated, String username) {}
 }

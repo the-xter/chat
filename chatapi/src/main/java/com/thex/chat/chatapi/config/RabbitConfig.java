@@ -2,7 +2,7 @@ package com.thex.chat.chatapi.config;
 
 import com.thex.chat.chatapi.messaging.RoomEvent;
 import com.thex.chat.chatapi.messaging.RoomUpdate;
-import com.thex.chat.chatapi.messaging.ConnectionsUpdate;
+import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -52,7 +52,7 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-                "ConnectionsUpdate", ConnectionsUpdate.class,
+                "ConnectionEvent", ConnectionEvent.class,
                 "RoomEvent", RoomEvent.class,
                 "RoomUpdate", RoomUpdate.class
         ));

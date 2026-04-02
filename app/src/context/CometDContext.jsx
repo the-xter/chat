@@ -44,7 +44,22 @@ export function CometDProvider({children}) {
                 if (reply.successful) {
                     setError(null);
                     cometd.subscribe('/connections', (message) => {
-                        if (!cancelledRef.current) setConnections(message.data);
+                        if (cancelledRef.current) return;
+                        const {eventType, connection} = message.data;
+                        setConnections(prev => {
+                            const list = connection.user.type === 'REGISTERED' ? 'registered' : 'guests';
+                            if (eventType === 'CONNECTED') {
+                                return {
+                                    ...prev,
+                                    [list]: [...prev[list], connection]
+                                };
+                            } else {
+                                return {
+                                    ...prev,
+                                    [list]: prev[list].filter(c => c.connectionId !== connection.connectionId)
+                                };
+                            }
+                        });
                     });
                 } else {
                     setError(reply.error || 'Handshake failed');

@@ -1,6 +1,6 @@
 package com.thex.chat.connection.config;
 
-import com.thex.chat.connection.messaging.ConnectionsUpdate;
+import com.thex.chat.connection.messaging.ConnectionEvent;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -27,7 +27,7 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-                "ConnectionsUpdate", ConnectionsUpdate.class
+                "ConnectionEvent", ConnectionEvent.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();
