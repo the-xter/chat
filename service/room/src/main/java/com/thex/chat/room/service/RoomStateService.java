@@ -1,17 +1,14 @@
 package com.thex.chat.room.service;
 
 import com.thex.chat.room.config.RabbitConfig;
-import com.thex.chat.room.dto.ConnectionInfo;
-import com.thex.chat.room.messaging.RoomEvent;
+import com.thex.chat.room.messaging.JoinRoomEvent;
+import com.thex.chat.room.messaging.LeaveRoomEvent;
 import com.thex.chat.room.messaging.RoomUpdate;
 import com.thex.chat.room.messaging.SessionEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,16 +19,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RoomStateService {
 
     private final RabbitTemplate rabbitTemplate;
-    private final RestClient restClient;
 
     private final Map<String, String> sessionNames = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> rooms = new ConcurrentHashMap<>();
     private final AtomicInteger guestCounter = new AtomicInteger(0);
 
-    public RoomStateService(RabbitTemplate rabbitTemplate,
-                            @Value("${services.connection.url}") String connectionServiceUrl) {
+    public RoomStateService(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
-        this.restClient = RestClient.builder().baseUrl(connectionServiceUrl).build();
     }
 
     @RabbitListener(queues = RabbitConfig.SESSION_EVENTS_QUEUE)
@@ -44,11 +38,11 @@ public class RoomStateService {
     }
 
     @RabbitListener(queues = RabbitConfig.ROOM_EVENTS_QUEUE)
-    public void handleRoomEvent(RoomEvent event) {
-        switch (event.action()) {
-            case "JOIN" -> handleJoin(event);
-            case "LEAVE" -> handleLeave(event);
-            default -> log.warn("Unknown room action: {}", event.action());
+    public void handleRoomEvent(Object event) {
+        switch (event) {
+            case JoinRoomEvent join -> handleJoin(join);
+            case LeaveRoomEvent leave -> handleLeave(leave);
+            default -> log.warn("Unknown room event type: {}", event.getClass().getSimpleName());
         }
     }
 
@@ -76,35 +70,24 @@ public class RoomStateService {
         }
     }
 
-    private void handleJoin(RoomEvent event) {
-        ConnectionInfo connection = restClient.get()
-                .uri("/connections/{connectionId}", event.sessionId())
-                .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                    log.warn("Connection not found for session: {}", event.sessionId());
-                })
-                .body(ConnectionInfo.class);
-
-        if (connection == null) {
-            log.warn("Join from unknown connection: {}", event.sessionId());
-            return;
-        }
-
-        String name = connection.user().name();
-        sessionNames.put(event.sessionId(), name);
+    private void handleJoin(JoinRoomEvent event) {
+        String sessionId = event.connectionInfo().connectionId();
+        String name = event.connectionInfo().user().name();
+        sessionNames.put(sessionId, name);
 
         rooms.computeIfAbsent(event.roomId(), k -> ConcurrentHashMap.newKeySet())
-                .add(event.sessionId());
+                .add(sessionId);
         log.info("{} joined room {}", name, event.roomId());
         publishRoomUpdate(event.roomId());
     }
 
-    private void handleLeave(RoomEvent event) {
-        String name = sessionNames.get(event.sessionId());
+    private void handleLeave(LeaveRoomEvent event) {
+        String sessionId = event.connectionInfo().connectionId();
+        String name = event.connectionInfo().user().name();
         Set<String> members = rooms.get(event.roomId());
         if (members != null) {
-            members.remove(event.sessionId());
-            log.info("{} left room {}", name != null ? name : event.sessionId(), event.roomId());
+            members.remove(sessionId);
+            log.info("{} left room {}", name, event.roomId());
             publishRoomUpdate(event.roomId());
         }
     }

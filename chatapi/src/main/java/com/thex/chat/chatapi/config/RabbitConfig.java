@@ -1,6 +1,7 @@
 package com.thex.chat.chatapi.config;
 
-import com.thex.chat.chatapi.messaging.RoomEvent;
+import com.thex.chat.chatapi.dto.JoinRoomEvent;
+import com.thex.chat.chatapi.dto.LeaveRoomEvent;
 import com.thex.chat.chatapi.messaging.RoomUpdate;
 import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import org.springframework.amqp.core.*;
@@ -53,7 +54,8 @@ public class RabbitConfig {
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
                 "ConnectionEvent", ConnectionEvent.class,
-                "RoomEvent", RoomEvent.class,
+                "JoinRoomEvent", JoinRoomEvent.class,
+                "LeaveRoomEvent", LeaveRoomEvent.class,
                 "RoomUpdate", RoomUpdate.class
         ));
         classMapper.setTrustedPackages("*");

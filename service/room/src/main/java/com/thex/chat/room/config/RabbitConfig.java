@@ -1,6 +1,7 @@
 package com.thex.chat.room.config;
 
-import com.thex.chat.room.messaging.RoomEvent;
+import com.thex.chat.room.messaging.JoinRoomEvent;
+import com.thex.chat.room.messaging.LeaveRoomEvent;
 import com.thex.chat.room.messaging.RoomUpdate;
 import com.thex.chat.room.messaging.SessionEvent;
 import org.springframework.amqp.core.*;
@@ -43,8 +44,13 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding roomEventsBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.*");
+    public Binding roomJoinBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.join");
+    }
+
+    @Bean
+    public Binding roomLeaveBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.leave");
     }
 
     @Bean
@@ -53,7 +59,8 @@ public class RabbitConfig {
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
                 "SessionEvent", SessionEvent.class,
-                "RoomEvent", RoomEvent.class,
+                "JoinRoomEvent", JoinRoomEvent.class,
+                "LeaveRoomEvent", LeaveRoomEvent.class,
                 "RoomUpdate", RoomUpdate.class
         ));
         classMapper.setTrustedPackages("*");
