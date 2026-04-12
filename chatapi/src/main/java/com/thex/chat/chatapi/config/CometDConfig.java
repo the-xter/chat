@@ -1,5 +1,6 @@
 package com.thex.chat.chatapi.config;
 
+import com.thex.chat.chatapi.chat.JwtHandshakePolicy;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.cometd.annotation.server.ServerAnnotationProcessor;
@@ -9,6 +10,7 @@ import org.cometd.server.http.jakarta.CometDServlet;
 import org.cometd.server.websocket.jakarta.WebSocketTransport;
 import org.eclipse.jetty.ee11.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee11.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.boot.jetty.servlet.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -32,8 +34,8 @@ public class CometDConfig {
     }
 
     @Bean
-    public ServletContextInitializer bayeuxInitializer() {
-        return servletContext -> servletContext.setAttribute(BayeuxServer.ATTRIBUTE, bayeuxServer());
+    public ServletContextInitializer bayeuxInitializer(BayeuxServer bayeuxServer) {
+        return servletContext -> servletContext.setAttribute(BayeuxServer.ATTRIBUTE, bayeuxServer);
     }
 
     @Bean
@@ -45,14 +47,23 @@ public class CometDConfig {
     }
 
     @Bean
-    public static DestructionAwareBeanPostProcessor cometdAnnotationProcessor(BayeuxServer bayeuxServer) {
-        var processor = new ServerAnnotationProcessor(bayeuxServer);
+    public static DestructionAwareBeanPostProcessor cometdAnnotationProcessor(ObjectProvider<BayeuxServer> bayeuxServerProvider) {
         return new DestructionAwareBeanPostProcessor() {
+            private volatile ServerAnnotationProcessor processor;
+
+            private ServerAnnotationProcessor getProcessor() {
+                if (processor == null) {
+                    processor = new ServerAnnotationProcessor(bayeuxServerProvider.getObject());
+                }
+                return processor;
+            }
+
             @Override
             public Object postProcessBeforeInitialization(@NonNull Object bean, @NonNull String name) {
-                processor.processDependencies(bean);
-                processor.processConfigurations(bean);
-                processor.processCallbacks(bean);
+                var p = getProcessor();
+                p.processDependencies(bean);
+                p.processConfigurations(bean);
+                p.processCallbacks(bean);
                 return bean;
             }
 
@@ -63,7 +74,9 @@ public class CometDConfig {
 
             @Override
             public void postProcessBeforeDestruction(@NonNull Object bean, @NonNull String name) {
-                processor.deprocess(bean);
+                if (processor != null) {
+                    processor.deprocess(bean);
+                }
             }
         };
     }
