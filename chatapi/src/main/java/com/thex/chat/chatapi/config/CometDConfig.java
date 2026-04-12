@@ -10,7 +10,6 @@ import org.cometd.server.http.jakarta.CometDServlet;
 import org.cometd.server.websocket.jakarta.WebSocketTransport;
 import org.eclipse.jetty.ee11.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee11.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.boot.jetty.servlet.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -47,23 +46,14 @@ public class CometDConfig {
     }
 
     @Bean
-    public static DestructionAwareBeanPostProcessor cometdAnnotationProcessor(ObjectProvider<BayeuxServer> bayeuxServerProvider) {
+    public DestructionAwareBeanPostProcessor cometdAnnotationProcessor(BayeuxServer bayeuxServer) {
+        var processor = new ServerAnnotationProcessor(bayeuxServer);
         return new DestructionAwareBeanPostProcessor() {
-            private volatile ServerAnnotationProcessor processor;
-
-            private ServerAnnotationProcessor getProcessor() {
-                if (processor == null) {
-                    processor = new ServerAnnotationProcessor(bayeuxServerProvider.getObject());
-                }
-                return processor;
-            }
-
             @Override
             public Object postProcessBeforeInitialization(@NonNull Object bean, @NonNull String name) {
-                var p = getProcessor();
-                p.processDependencies(bean);
-                p.processConfigurations(bean);
-                p.processCallbacks(bean);
+                processor.processDependencies(bean);
+                processor.processConfigurations(bean);
+                processor.processCallbacks(bean);
                 return bean;
             }
 
@@ -74,9 +64,7 @@ public class CometDConfig {
 
             @Override
             public void postProcessBeforeDestruction(@NonNull Object bean, @NonNull String name) {
-                if (processor != null) {
-                    processor.deprocess(bean);
-                }
+                processor.deprocess(bean);
             }
         };
     }
