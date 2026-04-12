@@ -54,11 +54,13 @@ public class ConnectionService implements BayeuxServer.SessionListener {
         var user = new UserInfo(username, username, userType);
         var connectionInfo = new ConnectionInfo(session.getId(), user);
 
+        session.setAttribute(Consts.CONNECTION_INFO, connectionInfo);
+
         restClient.post()
-                .uri("/connections")
-                .body(connectionInfo)
-                .retrieve()
-                .toBodilessEntity();
+            .uri("/connections")
+            .body(connectionInfo)
+            .retrieve()
+            .toBodilessEntity();
         log.info("Registered connection for {}", username != null ? username : "guest");
     }
 
@@ -67,9 +69,9 @@ public class ConnectionService implements BayeuxServer.SessionListener {
         if (session.isLocalSession()) return;
 
         restClient.delete()
-                .uri("/connections/{connectionId}", session.getId())
-                .retrieve()
-                .toBodilessEntity();
+            .uri("/connections/{connectionId}", session.getId())
+            .retrieve()
+            .toBodilessEntity();
         log.info("Removed connection for session {}", session.getId());
     }
 
@@ -78,15 +80,15 @@ public class ConnectionService implements BayeuxServer.SessionListener {
         ServerChannel channel = bayeuxServer.getChannel(CHANNEL_CONNECTIONS);
         if (channel != null) {
             Map<String, Object> data = Map.of(
-                    "eventType", event.eventType(),
-                    "connection", Map.of(
-                            "connectionId", event.connection().connectionId(),
-                            "user", Map.of(
-                                    "id", event.connection().user().id(),
-                                    "name", event.connection().user().name(),
-                                    "type", event.connection().user().type().name()
-                            )
+                "eventType", event.eventType(),
+                "connection", Map.of(
+                    "connectionId", event.connection().connectionId(),
+                    "user", Map.of(
+                        "id", event.connection().user().id(),
+                        "name", event.connection().user().name(),
+                        "type", event.connection().user().type().name()
                     )
+                )
             );
             channel.publish(localSession, data, Promise.noop());
             log.info("Broadcast connection {}: {}", event.eventType(), event.connection().user().name());

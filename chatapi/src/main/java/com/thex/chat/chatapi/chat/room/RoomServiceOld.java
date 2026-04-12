@@ -1,4 +1,4 @@
-package com.thex.chat.chatapi.chat;
+package com.thex.chat.chatapi.chat.room;
 
 import com.thex.chat.chatapi.config.RabbitConfig;
 import com.thex.chat.chatapi.messaging.RoomEvent;
@@ -11,15 +11,13 @@ import org.cometd.bayeux.client.ClientSession;
 import org.cometd.bayeux.server.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
-public class RoomService {
+public class RoomServiceOld {
 
     private final BayeuxServer bayeuxServer;
     private final RabbitTemplate rabbitTemplate;
@@ -66,8 +64,8 @@ public class RoomService {
         ServerChannel channel = bayeuxServer.getChannel(channelName);
         if (channel != null) {
             Map<String, Object> data = Map.of(
-                    "roomId", update.roomId(),
-                    "members", update.members()
+                "roomId", update.roomId(),
+                "members", update.members()
             );
             channel.publish(localSession, data, Promise.noop());
             log.info("Broadcast room update for {}: {} members", update.roomId(), update.members().size());

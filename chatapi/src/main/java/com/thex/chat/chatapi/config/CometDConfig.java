@@ -63,7 +63,7 @@ public class CometDConfig {
 
             @Override
             public Object postProcessAfterInitialization(@NonNull Object bean, @NonNull String name) {
-                return processor.process(bean) ? bean : bean;
+                return bean;
             }
 
             @Override
