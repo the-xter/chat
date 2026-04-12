@@ -63,7 +63,7 @@ public class RoomStateService {
 
     void handleJoin(JoinRoomEvent event) {
         String sessionId = event.connectionInfo().connectionId();
-        String name = event.connectionInfo().user().name();
+        String name = Objects.requireNonNullElse(event.connectionInfo().user().name(), sessionId);
         sessionNames.put(sessionId, name);
 
         rooms.computeIfAbsent(event.roomId(), k -> ConcurrentHashMap.newKeySet())

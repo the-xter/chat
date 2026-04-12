@@ -51,7 +51,8 @@ public class ConnectionService implements BayeuxServer.SessionListener {
         String username = (String) session.getAttribute(JwtHandshakePolicy.SESSION_ATTR_USERNAME);
 
         UserType userType = Boolean.TRUE.equals(authenticated) ? UserType.REGISTERED : UserType.GUEST;
-        var user = new UserInfo(username, username, userType);
+        String userId = username != null ? username : session.getId();
+        var user = new UserInfo(userId, userId, userType);
         var connectionInfo = new ConnectionInfo(session.getId(), user);
 
         session.setAttribute(Consts.CONNECTION_INFO, connectionInfo);
