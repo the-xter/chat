@@ -10,6 +10,7 @@ import org.cometd.server.http.jakarta.CometDServlet;
 import org.cometd.server.websocket.jakarta.WebSocketTransport;
 import org.eclipse.jetty.ee11.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee11.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.boot.jetty.servlet.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -17,7 +18,9 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Role;
 
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)  //to avoid post-processing warning
 @Configuration
 @Slf4j
 public class CometDConfig {
@@ -37,6 +40,7 @@ public class CometDConfig {
         return servletContext -> servletContext.setAttribute(BayeuxServer.ATTRIBUTE, bayeuxServer);
     }
 
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)  //to avoid post-processing warning
     @Bean
     public BayeuxServer bayeuxServer(JwtHandshakePolicy jwtHandshakePolicy) {
         var bayeux = new BayeuxServerImpl();

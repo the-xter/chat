@@ -1,8 +1,8 @@
 package com.thex.chat.chatapi.chat.room;
 
 import com.thex.chat.chatapi.config.RabbitConfig;
-import com.thex.chat.chatapi.dto.JoinRoomEvent;
-import com.thex.chat.chatapi.dto.LeaveRoomEvent;
+import com.thex.chat.chatapi.messaging.JoinRoomEvent;
+import com.thex.chat.chatapi.messaging.LeaveRoomEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

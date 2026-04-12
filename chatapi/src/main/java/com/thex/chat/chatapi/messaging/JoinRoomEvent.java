@@ -1,4 +1,6 @@
-package com.thex.chat.chatapi.dto;
+package com.thex.chat.chatapi.messaging;
+
+import com.thex.chat.chatapi.dto.ConnectionInfo;
 
 public record JoinRoomEvent (
     ConnectionInfo connectionInfo,

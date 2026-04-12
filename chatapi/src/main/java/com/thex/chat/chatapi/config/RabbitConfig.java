@@ -1,7 +1,7 @@
 package com.thex.chat.chatapi.config;
 
-import com.thex.chat.chatapi.dto.JoinRoomEvent;
-import com.thex.chat.chatapi.dto.LeaveRoomEvent;
+import com.thex.chat.chatapi.messaging.JoinRoomEvent;
+import com.thex.chat.chatapi.messaging.LeaveRoomEvent;
 import com.thex.chat.chatapi.messaging.RoomUpdate;
 import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import org.springframework.amqp.core.*;
