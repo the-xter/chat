@@ -37,15 +37,6 @@ public class RoomStateService {
         }
     }
 
-    @RabbitListener(queues = RabbitConfig.ROOM_EVENTS_QUEUE)
-    public void handleRoomEvent(Object event) {
-        switch (event) {
-            case JoinRoomEvent join -> handleJoin(join);
-            case LeaveRoomEvent leave -> handleLeave(leave);
-            default -> log.warn("Unknown room event type: {}", event.getClass().getSimpleName());
-        }
-    }
-
     private void handleConnected(SessionEvent event) {
         if (event.authenticated() && event.username() != null) {
             sessionNames.put(event.sessionId(), event.username());
@@ -70,7 +61,7 @@ public class RoomStateService {
         }
     }
 
-    private void handleJoin(JoinRoomEvent event) {
+    void handleJoin(JoinRoomEvent event) {
         String sessionId = event.connectionInfo().connectionId();
         String name = event.connectionInfo().user().name();
         sessionNames.put(sessionId, name);
@@ -81,7 +72,7 @@ public class RoomStateService {
         publishRoomUpdate(event.roomId());
     }
 
-    private void handleLeave(LeaveRoomEvent event) {
+    void handleLeave(LeaveRoomEvent event) {
         String sessionId = event.connectionInfo().connectionId();
         String name = event.connectionInfo().user().name();
         Set<String> members = rooms.get(event.roomId());
