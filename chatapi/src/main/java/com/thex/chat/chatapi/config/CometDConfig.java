@@ -1,8 +1,6 @@
 package com.thex.chat.chatapi.config;
 
-import com.thex.chat.chatapi.chat.JwtHandshakePolicy;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cometd.annotation.server.ServerAnnotationProcessor;
 import org.cometd.bayeux.server.BayeuxServer;
@@ -20,11 +18,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@RequiredArgsConstructor
 @Slf4j
 public class CometDConfig {
-
-    private final JwtHandshakePolicy jwtHandshakePolicy;
 
     @Bean
     public ServletRegistrationBean<@NonNull CometDServlet> cometDServlet() {
@@ -42,7 +37,7 @@ public class CometDConfig {
     }
 
     @Bean
-    public BayeuxServer bayeuxServer() {
+    public BayeuxServer bayeuxServer(JwtHandshakePolicy jwtHandshakePolicy) {
         var bayeux = new BayeuxServerImpl();
         bayeux.setOption("ws.cometdURLMapping", "/cometd/*");
         bayeux.setSecurityPolicy(jwtHandshakePolicy);
@@ -50,7 +45,7 @@ public class CometDConfig {
     }
 
     @Bean
-    public DestructionAwareBeanPostProcessor cometdAnnotationProcessor(BayeuxServer bayeuxServer) {
+    public static DestructionAwareBeanPostProcessor cometdAnnotationProcessor(BayeuxServer bayeuxServer) {
         var processor = new ServerAnnotationProcessor(bayeuxServer);
         return new DestructionAwareBeanPostProcessor() {
             @Override
