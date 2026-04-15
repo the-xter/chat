@@ -1,5 +1,8 @@
 package com.thex.chat.chatapi.security;
 
+import com.thex.chat.chatapi.dto.UserInfo;
+import com.thex.chat.chatapi.dto.UserType;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -21,22 +24,17 @@ public class JwtTokenValidator {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String getUsernameFromToken(String token) {
-        return Jwts.parser()
+    public UserInfo getUserFromToken(String token) {
+        Claims payload = Jwts.parser()
             .verifyWith(key)
             .build()
             .parseSignedClaims(token)
-            .getPayload()
-            .getSubject();
-    }
-
-    public Integer getUserIdFromToken(String token) {
-        return Jwts.parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .get("userId", Integer.class);
+            .getPayload();
+        return new UserInfo(
+            String.valueOf(payload.get("userId", Integer.class)),
+            payload.getSubject(),
+            UserType.REGISTERED
+        );
     }
 
     public boolean validateToken(String token) {

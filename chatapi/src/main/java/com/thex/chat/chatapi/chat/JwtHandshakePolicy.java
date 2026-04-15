@@ -13,12 +13,15 @@ import org.springframework.context.annotation.Role;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)  //to avoid post-processing warning
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtHandshakePolicy extends DefaultSecurityPolicy {
+
+    private final AtomicInteger guestCounter = new AtomicInteger();
 
     private final JwtTokenValidator jwtTokenValidator;
 
@@ -37,13 +40,9 @@ public class JwtHandshakePolicy extends DefaultSecurityPolicy {
 
         ConnectionInfo connectionInfo;
         if (token == null || token.isBlank()) {
-            var user = new UserInfo(session.getId(), session.getId(), UserType.GUEST);
-            connectionInfo = new ConnectionInfo(session.getId(), user);
+            connectionInfo = new ConnectionInfo(session.getId(), generateGuest());
         } else if (jwtTokenValidator.validateToken(token)) {
-            String username = jwtTokenValidator.getUsernameFromToken(token);
-            Integer userId = jwtTokenValidator.getUserIdFromToken(token);
-            var user = new UserInfo(String.valueOf(userId), username, UserType.REGISTERED);
-            connectionInfo = new ConnectionInfo(session.getId(), user);
+            connectionInfo = new ConnectionInfo(session.getId(), jwtTokenValidator.getUserFromToken(token));
         } else {
             ServerMessage.Mutable reply = message.getAssociated();
             Map<String, Object> advice = reply.getAdvice(true);
@@ -54,5 +53,13 @@ public class JwtHandshakePolicy extends DefaultSecurityPolicy {
 
         session.setAttribute(Consts.CONNECTION_INFO, connectionInfo);
         return true;
+    }
+
+    private UserInfo generateGuest() {
+        return new UserInfo(
+            null,
+            "guest-" + guestCounter.incrementAndGet(),
+            UserType.GUEST
+        );
     }
 }
