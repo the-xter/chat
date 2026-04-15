@@ -30,6 +30,15 @@ public class JwtTokenValidator {
             .getSubject();
     }
 
+    public Integer getUserIdFromToken(String token) {
+        return Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .get("userId", Integer.class);
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);

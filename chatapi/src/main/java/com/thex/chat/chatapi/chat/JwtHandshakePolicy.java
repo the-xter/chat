@@ -1,5 +1,8 @@
 package com.thex.chat.chatapi.chat;
 
+import com.thex.chat.chatapi.dto.ConnectionInfo;
+import com.thex.chat.chatapi.dto.UserInfo;
+import com.thex.chat.chatapi.dto.UserType;
 import com.thex.chat.chatapi.security.JwtTokenValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +19,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtHandshakePolicy extends DefaultSecurityPolicy {
-    public static final String SESSION_ATTR_USERNAME = "username";
-    public static final String SESSION_ATTR_AUTHENTICATED = "authenticated";
 
     private final JwtTokenValidator jwtTokenValidator;
 
@@ -34,17 +35,15 @@ public class JwtHandshakePolicy extends DefaultSecurityPolicy {
             token = (String) auth.get("token");
         }
 
+        ConnectionInfo connectionInfo;
         if (token == null || token.isBlank()) {
-            session.setAttribute(SESSION_ATTR_AUTHENTICATED, false);
-            session.setAttribute(SESSION_ATTR_USERNAME, null);
-            return true;
-        }
-
-        if (jwtTokenValidator.validateToken(token)) {
+            var user = new UserInfo(session.getId(), session.getId(), UserType.GUEST);
+            connectionInfo = new ConnectionInfo(session.getId(), user);
+        } else if (jwtTokenValidator.validateToken(token)) {
             String username = jwtTokenValidator.getUsernameFromToken(token);
-            session.setAttribute(SESSION_ATTR_AUTHENTICATED, true);
-            session.setAttribute(SESSION_ATTR_USERNAME, username);
-            return true;
+            Integer userId = jwtTokenValidator.getUserIdFromToken(token);
+            var user = new UserInfo(String.valueOf(userId), username, UserType.REGISTERED);
+            connectionInfo = new ConnectionInfo(session.getId(), user);
         } else {
             ServerMessage.Mutable reply = message.getAssociated();
             Map<String, Object> advice = reply.getAdvice(true);
@@ -52,5 +51,8 @@ public class JwtHandshakePolicy extends DefaultSecurityPolicy {
             reply.put("error", "401::Invalid authentication token");
             return false;
         }
+
+        session.setAttribute(Consts.CONNECTION_INFO, connectionInfo);
+        return true;
     }
 }

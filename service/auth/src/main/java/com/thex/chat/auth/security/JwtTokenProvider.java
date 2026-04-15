@@ -1,10 +1,9 @@
 package com.thex.chat.auth.security;
 
+import com.thex.chat.auth.model.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -25,13 +24,13 @@ public class JwtTokenProvider {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    public String generateToken(User user) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-            .subject(userDetails.getUsername())
+            .subject(user.getUsername())
+            .claim("userId", user.getId())
             .issuedAt(now)
             .expiration(expiry)
             .signWith(key)

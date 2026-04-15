@@ -2,8 +2,6 @@ package com.thex.chat.chatapi.chat;
 
 import com.thex.chat.chatapi.config.RabbitConfig;
 import com.thex.chat.chatapi.dto.ConnectionInfo;
-import com.thex.chat.chatapi.dto.UserInfo;
-import com.thex.chat.chatapi.dto.UserType;
 import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -47,22 +45,18 @@ public class ConnectionService implements BayeuxServer.SessionListener {
     public void sessionAdded(ServerSession session, ServerMessage message) {
         if (session.isLocalSession()) return;
 
-        Boolean authenticated = (Boolean) session.getAttribute(JwtHandshakePolicy.SESSION_ATTR_AUTHENTICATED);
-        String username = (String) session.getAttribute(JwtHandshakePolicy.SESSION_ATTR_USERNAME);
-
-        UserType userType = Boolean.TRUE.equals(authenticated) ? UserType.REGISTERED : UserType.GUEST;
-        String userId = username != null ? username : session.getId();
-        var user = new UserInfo(userId, userId, userType);
-        var connectionInfo = new ConnectionInfo(session.getId(), user);
-
-        session.setAttribute(Consts.CONNECTION_INFO, connectionInfo);
+        ConnectionInfo connectionInfo = (ConnectionInfo) session.getAttribute(Consts.CONNECTION_INFO);
+        if (connectionInfo == null) {
+            log.warn("No ConnectionInfo for session {}", session.getId());
+            return;
+        }
 
         restClient.post()
             .uri("/connections")
             .body(connectionInfo)
             .retrieve()
             .toBodilessEntity();
-        log.info("Registered connection for {}", username != null ? username : "guest");
+        log.info("Registered connection for {}", connectionInfo.user().name());
     }
 
     @Override

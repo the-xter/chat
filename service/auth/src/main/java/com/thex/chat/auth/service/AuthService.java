@@ -10,7 +10,6 @@ import com.thex.chat.auth.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -41,23 +40,23 @@ public class AuthService {
             .build();
         userRepository.save(user);
 
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
-        String token = jwtTokenProvider.generateToken(authentication);
+        String token = jwtTokenProvider.generateToken(user);
         return new AuthResponse(token, user.getUsername(), user.getRoles());
     }
 
     public AuthResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
         User user = userRepository.findByUsername(request.username())
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        String token = jwtTokenProvider.generateToken(authentication);
+        String token = jwtTokenProvider.generateToken(user);
         return new AuthResponse(token, user.getUsername(), user.getRoles());
     }
 }
