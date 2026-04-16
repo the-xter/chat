@@ -62,23 +62,24 @@ public class RoomStateService {
     }
 
     void handleJoin(JoinRoomEvent event) {
+        log.info("join room event {}", event);
+
         String sessionId = event.connectionInfo().connectionId();
         String name = Objects.requireNonNullElse(event.connectionInfo().user().name(), sessionId);
         sessionNames.put(sessionId, name);
 
         rooms.computeIfAbsent(event.roomId(), k -> ConcurrentHashMap.newKeySet())
                 .add(sessionId);
-        log.info("{} joined room {}", name, event.roomId());
         publishRoomUpdate(event.roomId());
     }
 
     void handleLeave(LeaveRoomEvent event) {
+        log.info("leave room event {}", event);
+
         String sessionId = event.connectionInfo().connectionId();
-        String name = event.connectionInfo().user().name();
         Set<String> members = rooms.get(event.roomId());
         if (members != null) {
             members.remove(sessionId);
-            log.info("{} left room {}", name, event.roomId());
             publishRoomUpdate(event.roomId());
         }
     }
