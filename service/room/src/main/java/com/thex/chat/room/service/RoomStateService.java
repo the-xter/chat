@@ -16,23 +16,30 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RoomStateService {
 
     private final RabbitTemplate rabbitTemplate;
+    private final ConnectionServiceClient connectionService;
 
     private final Map<String, String> sessionNames = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> rooms = new ConcurrentHashMap<>();
 
-    public RoomStateService(RabbitTemplate rabbitTemplate) {
+    public RoomStateService(RabbitTemplate rabbitTemplate, ConnectionServiceClient connectionServiceClient) {
         this.rabbitTemplate = rabbitTemplate;
+        this.connectionService = connectionServiceClient;
     }
 
     void handleJoin(JoinRoomEvent event) {
         log.info("join room event {}", event);
 
         String sessionId = event.connectionInfo().connectionId();
+        if (!connectionService.isConnectionAlive(sessionId)) {
+            log.info("Ignoring join for room {} because connection {} is not alive", event.roomId(), sessionId);
+            return;
+        }
+
         String name = Objects.requireNonNullElse(event.connectionInfo().user().name(), sessionId);
         sessionNames.put(sessionId, name);
 
         rooms.computeIfAbsent(event.roomId(), k -> ConcurrentHashMap.newKeySet())
-                .add(sessionId);
+            .add(sessionId);
         publishRoomUpdate(event.roomId());
     }
 
@@ -50,10 +57,10 @@ public class RoomStateService {
     private void publishRoomUpdate(String roomId) {
         Set<String> sessionIds = rooms.getOrDefault(roomId, Set.of());
         List<String> memberNames = sessionIds.stream()
-                .map(sessionNames::get)
-                .filter(Objects::nonNull)
-                .sorted()
-                .toList();
+            .map(sessionNames::get)
+            .filter(Objects::nonNull)
+            .sorted()
+            .toList();
         var update = new RoomUpdate(roomId, memberNames);
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "room.updated", update);
         log.info("Published room.updated for {}: {} members", roomId, memberNames.size());
