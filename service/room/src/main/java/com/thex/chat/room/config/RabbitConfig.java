@@ -3,7 +3,6 @@ package com.thex.chat.room.config;
 import com.thex.chat.room.messaging.JoinRoomEvent;
 import com.thex.chat.room.messaging.LeaveRoomEvent;
 import com.thex.chat.room.messaging.RoomUpdate;
-import com.thex.chat.room.messaging.SessionEvent;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -20,7 +19,6 @@ import java.util.Map;
 public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
-    public static final String SESSION_EVENTS_QUEUE = "room.session-events";
     public static final String ROOM_EVENTS_QUEUE = "room.room-events";
 
     @Bean
@@ -29,18 +27,8 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue sessionEventsQueue() {
-        return new Queue(SESSION_EVENTS_QUEUE, true);
-    }
-
-    @Bean
     public Queue roomEventsQueue() {
         return new Queue(ROOM_EVENTS_QUEUE, true);
-    }
-
-    @Bean
-    public Binding sessionEventsBinding(Queue sessionEventsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(sessionEventsQueue).to(chatEventsExchange).with("session.*");
     }
 
     @Bean
@@ -58,7 +46,6 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-                "SessionEvent", SessionEvent.class,
                 "JoinRoomEvent", JoinRoomEvent.class,
                 "LeaveRoomEvent", LeaveRoomEvent.class,
                 "RoomUpdate", RoomUpdate.class
