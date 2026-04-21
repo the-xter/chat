@@ -2,7 +2,7 @@ package com.thex.chat.chatapi.config;
 
 import com.thex.chat.chatapi.messaging.JoinRoomEvent;
 import com.thex.chat.chatapi.messaging.LeaveRoomEvent;
-import com.thex.chat.chatapi.messaging.RoomUpdate;
+import com.thex.chat.chatapi.messaging.RoomVisitors;
 import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -21,7 +21,7 @@ public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
     public static final String CONNECTION_UPDATES_QUEUE = "chatapi.connection-updates";
-    public static final String ROOM_UPDATES_QUEUE = "chatapi.room-updates";
+    public static final String ROOM_VISITORS_QUEUE = "chatapi.room-visitors";
 
     @Bean
     public TopicExchange chatEventsExchange() {
@@ -34,8 +34,8 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue roomUpdatesQueue() {
-        return new Queue(ROOM_UPDATES_QUEUE, true);
+    public Queue roomVisitorsQueue() {
+        return new Queue(ROOM_VISITORS_QUEUE, true);
     }
 
     @Bean
@@ -44,8 +44,8 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding roomUpdatesBinding(Queue roomUpdatesQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomUpdatesQueue).to(chatEventsExchange).with("room.updated");
+    public Binding roomVisitorsBinding(Queue roomVisitorsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomVisitorsQueue).to(chatEventsExchange).with("room.visitors");
     }
 
     @Bean
@@ -56,7 +56,7 @@ public class RabbitConfig {
                 "ConnectionEvent", ConnectionEvent.class,
                 "JoinRoomEvent", JoinRoomEvent.class,
                 "LeaveRoomEvent", LeaveRoomEvent.class,
-                "RoomUpdate", RoomUpdate.class
+                "RoomVisitors", RoomVisitors.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();

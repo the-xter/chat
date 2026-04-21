@@ -2,7 +2,7 @@ package com.thex.chat.room.config;
 
 import com.thex.chat.room.messaging.JoinRoomEvent;
 import com.thex.chat.room.messaging.LeaveRoomEvent;
-import com.thex.chat.room.messaging.RoomUpdate;
+import com.thex.chat.room.messaging.RoomVisitors;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -48,7 +48,7 @@ public class RabbitConfig {
         classMapper.setIdClassMapping(Map.of(
                 "JoinRoomEvent", JoinRoomEvent.class,
                 "LeaveRoomEvent", LeaveRoomEvent.class,
-                "RoomUpdate", RoomUpdate.class
+                "RoomVisitors", RoomVisitors.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();

@@ -1,14 +1,17 @@
 package com.thex.chat.room.service;
 
 import com.thex.chat.room.config.RabbitConfig;
+import com.thex.chat.room.dto.ConnectionInfo;
+import com.thex.chat.room.dto.UserInfo;
 import com.thex.chat.room.messaging.JoinRoomEvent;
 import com.thex.chat.room.messaging.LeaveRoomEvent;
-import com.thex.chat.room.messaging.RoomUpdate;
+import com.thex.chat.room.messaging.RoomVisitors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -18,8 +21,7 @@ public class RoomStateService {
     private final RabbitTemplate rabbitTemplate;
     private final ConnectionServiceClient connectionService;
 
-    private final Map<String, String> sessionNames = new ConcurrentHashMap<>();
-    private final Map<String, Set<String>> rooms = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, ConnectionInfo>> rooms = new ConcurrentHashMap<>();
 
     public RoomStateService(RabbitTemplate rabbitTemplate, ConnectionServiceClient connectionServiceClient) {
         this.rabbitTemplate = rabbitTemplate;
@@ -29,40 +31,40 @@ public class RoomStateService {
     void handleJoin(JoinRoomEvent event) {
         log.info("join room event {}", event);
 
-        String sessionId = event.connectionInfo().connectionId();
-        if (!connectionService.isConnectionAlive(sessionId)) {
-            log.info("Ignoring join for room {} because connection {} is not alive", event.roomId(), sessionId);
+        ConnectionInfo joining = event.connectionInfo();
+        String connectionId = joining.connectionId();
+        if (!connectionService.isConnectionAlive(connectionId)) {
+            log.info("Ignoring join for room {} because connection {} is not alive", event.roomId(), connectionId);
             return;
         }
 
-        String name = Objects.requireNonNullElse(event.connectionInfo().user().name(), sessionId);
-        sessionNames.put(sessionId, name);
+        Map<String, ConnectionInfo> members = rooms.computeIfAbsent(
+            event.roomId(), k -> new ConcurrentHashMap<>()
+        );
+        members.put(connectionId, joining);
 
-        rooms.computeIfAbsent(event.roomId(), k -> ConcurrentHashMap.newKeySet())
-            .add(sessionId);
-        publishRoomUpdate(event.roomId());
+        List<UserInfo> visibleVisitors = members.values().stream()
+            .filter(other -> isVisible(joining, other))
+            .map(ConnectionInfo::user)
+            .toList();
+
+        var message = new RoomVisitors(connectionId, event.roomId(), visibleVisitors);
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "room.visitors", message);
+        log.info("Published room.visitors for {} in room {}: {} visitors",
+            connectionId, event.roomId(), visibleVisitors.size());
     }
 
     void handleLeave(LeaveRoomEvent event) {
         log.info("leave room event {}", event);
 
-        String sessionId = event.connectionInfo().connectionId();
-        Set<String> members = rooms.get(event.roomId());
+        String connectionId = event.connectionInfo().connectionId();
+        Map<String, ConnectionInfo> members = rooms.get(event.roomId());
         if (members != null) {
-            members.remove(sessionId);
-            publishRoomUpdate(event.roomId());
+            members.remove(connectionId);
         }
     }
 
-    private void publishRoomUpdate(String roomId) {
-        Set<String> sessionIds = rooms.getOrDefault(roomId, Set.of());
-        List<String> memberNames = sessionIds.stream()
-            .map(sessionNames::get)
-            .filter(Objects::nonNull)
-            .sorted()
-            .toList();
-        var update = new RoomUpdate(roomId, memberNames);
-        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "room.updated", update);
-        log.info("Published room.updated for {}: {} members", roomId, memberNames.size());
+    private boolean isVisible(ConnectionInfo viewer, ConnectionInfo subject) {
+        return true;
     }
 }

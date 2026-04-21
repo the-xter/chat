@@ -9,7 +9,7 @@ export function CometDProvider({children}) {
     const [connected, setConnected] = useState(false);
     const [error, setError] = useState(null);
     const [connections, setConnections] = useState({registered: [], guests: []});
-    const [roomMembers, setRoomMembers] = useState([]);
+    const [visitors, setVisitors] = useState([]);
     const [currentRoom, setCurrentRoom] = useState(null);
 
     const cometdRef = useRef(null);
@@ -77,7 +77,7 @@ export function CometDProvider({children}) {
             roomSubRef.current = null;
             setConnected(false);
             setConnections({registered: [], guests: []});
-            setRoomMembers([]);
+            setVisitors([]);
             setCurrentRoom(null);
         };
     }, [user?.token]);
@@ -93,7 +93,7 @@ export function CometDProvider({children}) {
 
         roomSubRef.current = cometd.subscribe('/room/' + roomId, (message) => {
             if (!cancelledRef.current) {
-                setRoomMembers(message.data.members);
+                setVisitors(message.data.visitors);
             }
         });
 
@@ -113,11 +113,11 @@ export function CometDProvider({children}) {
         }
 
         setCurrentRoom(null);
-        setRoomMembers([]);
+        setVisitors([]);
     }, [currentRoom]);
 
     return (
-        <CometDContext.Provider value={{connected, error, connections, roomMembers, currentRoom, joinRoom, leaveRoom}}>
+        <CometDContext.Provider value={{connected, error, connections, visitors, currentRoom, joinRoom, leaveRoom}}>
             {children}
         </CometDContext.Provider>
     );

@@ -6,7 +6,7 @@ const ROOM_ID = 'general';
 
 export default function Chat() {
     const {user} = useAuth();
-    const {connected, error, connections, roomMembers, currentRoom, joinRoom, leaveRoom} = useCometD();
+    const {connected, error, connections, visitors, currentRoom, joinRoom, leaveRoom} = useCometD();
 
     if (error) {
         return (
@@ -43,13 +43,13 @@ export default function Chat() {
                         </button>
                     </div>
                     <div className="room-members">
-                        <h3>Members ({roomMembers.length})</h3>
+                        <h3>Visitors ({visitors.length})</h3>
                         <ul className="members-list">
-                            {roomMembers.map((name, i) => (
-                                <li key={i} className="member">{name}</li>
+                            {visitors.map((visitor) => (
+                                <li key={visitor.id} className="member">{visitor.name}</li>
                             ))}
-                            {roomMembers.length === 0 && (
-                                <li className="member empty">No members yet</li>
+                            {visitors.length === 0 && (
+                                <li className="member empty">No visitors yet</li>
                             )}
                         </ul>
                     </div>
