@@ -1,7 +1,7 @@
 package com.thex.chat.chatapi.config;
 
-import com.thex.chat.chatapi.messaging.JoinRoomEvent;
-import com.thex.chat.chatapi.messaging.LeaveRoomEvent;
+import com.thex.chat.chatapi.messaging.JoinRoomRequest;
+import com.thex.chat.chatapi.messaging.LeaveRoomRequest;
 import com.thex.chat.chatapi.messaging.RoomVisitors;
 import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import org.springframework.amqp.core.*;
@@ -53,10 +53,10 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-                "ConnectionEvent", ConnectionEvent.class,
-                "JoinRoomEvent", JoinRoomEvent.class,
-                "LeaveRoomEvent", LeaveRoomEvent.class,
-                "RoomVisitors", RoomVisitors.class
+            "ConnectionEvent", ConnectionEvent.class,
+            "JoinRoomRequest", JoinRoomRequest.class,
+            "LeaveRoomRequest", LeaveRoomRequest.class,
+            "RoomVisitors", RoomVisitors.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();
@@ -73,7 +73,7 @@ public class RabbitConfig {
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-            ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+        ConnectionFactory connectionFactory, MessageConverter messageConverter) {
         var factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(messageConverter);

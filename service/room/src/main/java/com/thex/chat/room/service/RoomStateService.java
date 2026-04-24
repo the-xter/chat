@@ -2,8 +2,8 @@ package com.thex.chat.room.service;
 
 import com.thex.chat.room.dto.ConnectionInfo;
 import com.thex.chat.room.dto.UserInfo;
-import com.thex.chat.room.messaging.JoinRoomEvent;
-import com.thex.chat.room.messaging.LeaveRoomEvent;
+import com.thex.chat.room.messaging.JoinRoomRequest;
+import com.thex.chat.room.messaging.LeaveRoomRequest;
 import com.thex.chat.room.messaging.RoomNotifier;
 import com.thex.chat.room.messaging.RoomVisitors;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class RoomStateService {
 
     private final Map<String, Map<String, ConnectionInfo>> rooms = new ConcurrentHashMap<>();
 
-    void handleJoin(JoinRoomEvent event) {
+    void handleJoin(JoinRoomRequest event) {
         log.info("join room event {}", event);
 
         ConnectionInfo joiningConnection = event.connectionInfo();
@@ -47,7 +47,7 @@ public class RoomStateService {
         roomNotifier.sendRoomVisitors(new RoomVisitors(connectionId, event.roomId(), visibleVisitors));
     }
 
-    void handleLeave(LeaveRoomEvent event) {
+    void handleLeave(LeaveRoomRequest event) {
         log.info("leave room event {}", event);
 
         String connectionId = event.connectionInfo().connectionId();

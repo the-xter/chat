@@ -1,7 +1,7 @@
 package com.thex.chat.room.config;
 
-import com.thex.chat.room.messaging.JoinRoomEvent;
-import com.thex.chat.room.messaging.LeaveRoomEvent;
+import com.thex.chat.room.messaging.JoinRoomRequest;
+import com.thex.chat.room.messaging.LeaveRoomRequest;
 import com.thex.chat.room.messaging.RoomVisitors;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -33,12 +33,12 @@ public class RabbitConfig {
 
     @Bean
     public Binding roomJoinBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.join");
+        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.join.request");
     }
 
     @Bean
     public Binding roomLeaveBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.leave");
+        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.leave.request");
     }
 
     @Bean
@@ -46,9 +46,9 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-                "JoinRoomEvent", JoinRoomEvent.class,
-                "LeaveRoomEvent", LeaveRoomEvent.class,
-                "RoomVisitors", RoomVisitors.class
+            "JoinRoomRequest", JoinRoomRequest.class,
+            "LeaveRoomRequest", LeaveRoomRequest.class,
+            "RoomVisitors", RoomVisitors.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();
@@ -65,7 +65,7 @@ public class RabbitConfig {
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-            ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+        ConnectionFactory connectionFactory, MessageConverter messageConverter) {
         var factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(messageConverter);

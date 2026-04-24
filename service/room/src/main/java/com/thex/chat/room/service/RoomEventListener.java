@@ -1,8 +1,8 @@
 package com.thex.chat.room.service;
 
 import com.thex.chat.room.config.RabbitConfig;
-import com.thex.chat.room.messaging.JoinRoomEvent;
-import com.thex.chat.room.messaging.LeaveRoomEvent;
+import com.thex.chat.room.messaging.JoinRoomRequest;
+import com.thex.chat.room.messaging.LeaveRoomRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -18,12 +18,12 @@ public class RoomEventListener {
     private final RoomStateService roomStateService;
 
     @RabbitHandler
-    public void handleJoin(JoinRoomEvent event) {
+    public void handleJoin(JoinRoomRequest event) {
         roomStateService.handleJoin(event);
     }
 
     @RabbitHandler
-    public void handleLeave(LeaveRoomEvent event) {
+    public void handleLeave(LeaveRoomRequest event) {
         roomStateService.handleLeave(event);
     }
 
