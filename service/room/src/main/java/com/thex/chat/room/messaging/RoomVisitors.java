@@ -8,4 +8,13 @@ public record RoomVisitors(
         String targetConnectionId,
         String roomId,
         List<UserInfo> visitors
-) {}
+) {
+    @Override
+    public String toString() {
+        return "{" +
+            "for='" + targetConnectionId + '\'' +
+            ", roomId='" + roomId + '\'' +
+            ", visitors=" + visitors.size() +
+            '}';
+    }
+}
