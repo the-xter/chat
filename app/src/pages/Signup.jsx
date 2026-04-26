@@ -54,7 +54,7 @@ export default function Signup() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        minLength={8}
+                        minLength={3}
                     />
                 </label>
                 <button type="submit" disabled={loading}>

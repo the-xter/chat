@@ -4,6 +4,11 @@ import {useAuth} from './AuthContext';
 
 const CometDContext = createContext(null);
 
+export function visitorKey(user) {
+    if (!user) return null;
+    return user.id ?? `name:${user.name}`;
+}
+
 export function CometDProvider({children}) {
     const {user} = useAuth();
     const [connected, setConnected] = useState(false);
@@ -14,6 +19,7 @@ export function CometDProvider({children}) {
 
     const cometdRef = useRef(null);
     const roomSubRef = useRef(null);
+    const roomVisitorSubRef = useRef(null);
     const cancelledRef = useRef(false);
 
     useEffect(() => {
@@ -75,6 +81,7 @@ export function CometDProvider({children}) {
             }
             cometdRef.current = null;
             roomSubRef.current = null;
+            roomVisitorSubRef.current = null;
             setConnected(false);
             setConnections({registered: [], guests: []});
             setVisitors([]);
@@ -90,11 +97,32 @@ export function CometDProvider({children}) {
             cometd.unsubscribe(roomSubRef.current);
             roomSubRef.current = null;
         }
+        if (roomVisitorSubRef.current) {
+            cometd.unsubscribe(roomVisitorSubRef.current);
+            roomVisitorSubRef.current = null;
+        }
 
         roomSubRef.current = cometd.subscribe('/room/' + roomId, (message) => {
             if (!cancelledRef.current) {
                 setVisitors(message.data.visitors);
             }
+        });
+
+        roomVisitorSubRef.current = cometd.subscribe('/room/' + roomId + '/visitor', (message) => {
+            if (cancelledRef.current) return;
+            const {user, action} = message.data;
+            if (!user) return;
+            const key = visitorKey(user);
+            setVisitors(prev => {
+                if (action === 'joined') {
+                    if (prev.some(v => visitorKey(v) === key)) return prev;
+                    return [...prev, user];
+                }
+                if (action === 'left') {
+                    return prev.filter(v => visitorKey(v) !== key);
+                }
+                return prev;
+            });
         });
 
         cometd.publish('/service/room', {action: 'join', roomId});
@@ -110,6 +138,10 @@ export function CometDProvider({children}) {
         if (roomSubRef.current) {
             cometd.unsubscribe(roomSubRef.current);
             roomSubRef.current = null;
+        }
+        if (roomVisitorSubRef.current) {
+            cometd.unsubscribe(roomVisitorSubRef.current);
+            roomVisitorSubRef.current = null;
         }
 
         setCurrentRoom(null);

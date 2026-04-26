@@ -1,4 +1,4 @@
-import {useCometD} from '../context/CometDContext';
+import {useCometD, visitorKey} from '../context/CometDContext';
 import {useAuth} from '../context/AuthContext';
 import './Chat.css';
 
@@ -46,7 +46,7 @@ export default function Chat() {
                         <h3>Visitors ({visitors.length})</h3>
                         <ul className="members-list">
                             {visitors.map((visitor) => (
-                                <li key={visitor.id} className="member">{visitor.name}</li>
+                                <li key={visitorKey(visitor)} className="member">{visitor.name}</li>
                             ))}
                             {visitors.length === 0 && (
                                 <li className="member empty">No visitors yet</li>

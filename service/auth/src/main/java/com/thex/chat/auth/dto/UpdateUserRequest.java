@@ -10,7 +10,7 @@ public record UpdateUserRequest(
     @Email
     String email,
 
-    @Size(min = 8, max = 100)
+    @Size(min = 3, max = 100)
     String password
 ) {
 }

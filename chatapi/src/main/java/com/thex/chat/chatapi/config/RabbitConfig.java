@@ -1,9 +1,10 @@
 package com.thex.chat.chatapi.config;
 
+import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import com.thex.chat.chatapi.messaging.JoinRoomRequest;
 import com.thex.chat.chatapi.messaging.LeaveRoomRequest;
+import com.thex.chat.chatapi.messaging.RoomVisitorUpdate;
 import com.thex.chat.chatapi.messaging.RoomVisitors;
-import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -49,6 +50,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding roomVisitorUpdateBinding(Queue roomVisitorsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomVisitorsQueue).to(chatEventsExchange).with("room.visitor.update");
+    }
+
+    @Bean
     public MessageConverter messageConverter() {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
@@ -56,7 +62,8 @@ public class RabbitConfig {
             "ConnectionEvent", ConnectionEvent.class,
             "JoinRoomRequest", JoinRoomRequest.class,
             "LeaveRoomRequest", LeaveRoomRequest.class,
-            "RoomVisitors", RoomVisitors.class
+            "RoomVisitors", RoomVisitors.class,
+            "RoomVisitorUpdate", RoomVisitorUpdate.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();
