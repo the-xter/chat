@@ -33,10 +33,13 @@ public class RoomStateService {
         }
 
         Room room = rooms.computeIfAbsent(event.roomId(), Room::new);
+        boolean userNewlyJoined = !room.hasUser(joiningConnection.user());
         room.addConnection(joiningConnection);
 
         sendRoomVisitors(room, joiningConnection);
-        notifyVisitorJoined(room, joiningConnection);
+        if (userNewlyJoined) {
+            notifyVisitorJoined(room, joiningConnection);
+        }
     }
 
     private void sendRoomVisitors(Room room, ConnectionInfo connection) {

@@ -17,7 +17,7 @@ import java.util.List;
 public class RoomNotifier {
     private final RabbitTemplate rabbitTemplate;
 
-    public void sendRoomVisitors(String connectionId, String roomId, List<UserInfo> visitors) {
+    public void sendRoomVisitors(String connectionId, String roomId, Collection<UserInfo> visitors) {
         RoomVisitors roomVisitors = new RoomVisitors(connectionId, roomId, visitors);
         rabbitTemplate.convertAndSend(
             RabbitConfig.EXCHANGE,

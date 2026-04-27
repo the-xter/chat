@@ -4,9 +4,9 @@ import com.thex.chat.room.dto.ConnectionInfo;
 import com.thex.chat.room.dto.UserInfo;
 import com.thex.chat.room.dto.UserType;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Room {
@@ -33,10 +33,11 @@ public class Room {
         return connections.isEmpty();
     }
 
-    public List<UserInfo> visibleVisitorsFor(ConnectionInfo viewer) {
+    public Collection<UserInfo> visibleVisitorsFor(ConnectionInfo viewer) {
         return connections.values().stream()
             .filter(subject -> isVisible(viewer, subject))
             .map(ConnectionInfo::user)
+            .distinct()  //the equals method is overridden for records
             .toList();
     }
 
@@ -59,10 +60,6 @@ public class Room {
 
     public boolean hasUser(UserInfo user) {
         return connections.values().stream()
-            .anyMatch(connection -> sameUser(connection.user(), user));
-    }
-
-    private boolean sameUser(UserInfo user1, UserInfo user2) {
-        return Objects.equals(user1.id(), user2.id()) && user2.type() == user1.type();
+            .anyMatch(connection -> connection.user().equals(user));  //the equals method is overridden for records
     }
 }
