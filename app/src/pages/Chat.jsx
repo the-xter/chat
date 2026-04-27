@@ -6,7 +6,7 @@ const ROOM_ID = 'general';
 
 export default function Chat() {
     const {user} = useAuth();
-    const {connected, error, connections, visitors, currentRoom, joinRoom, leaveRoom} = useCometD();
+    const {connected, error, visitors, currentRoom, joinRoom, leaveRoom} = useCometD();
 
     if (error) {
         return (
@@ -56,30 +56,6 @@ export default function Chat() {
                 </div>
             )}
 
-            <div className="connections-container">
-                <div className="connections-panel">
-                    <h3>Registered Users ({connections.registered.length})</h3>
-                    <ul className="connections-list">
-                        {connections.registered.map((conn) => (
-                            <li key={conn.connectionId} className="connection registered">{conn.user.name}</li>
-                        ))}
-                        {connections.registered.length === 0 && (
-                            <li className="connection empty">No registered users online</li>
-                        )}
-                    </ul>
-                </div>
-                <div className="connections-panel">
-                    <h3>Guests ({connections.guests.length})</h3>
-                    <ul className="connections-list">
-                        {connections.guests.map((conn) => (
-                            <li key={conn.connectionId} className="connection guest">{conn.user.name}</li>
-                        ))}
-                        {connections.guests.length === 0 && (
-                            <li className="connection empty">No guests online</li>
-                        )}
-                    </ul>
-                </div>
-            </div>
         </div>
     );
 }

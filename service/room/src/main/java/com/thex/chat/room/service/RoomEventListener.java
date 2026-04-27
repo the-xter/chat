@@ -31,7 +31,7 @@ public class RoomEventListener {
     @RabbitHandler
     public void handleConnectionEvent(ConnectionEvent event) {
         if ("DISCONNECTED".equals(event.eventType())) {
-            roomStateService.handleDisconnect(event.connection().connectionId());
+            roomStateService.handleDisconnect(event.connection());
         }
     }
 

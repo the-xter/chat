@@ -1,10 +1,6 @@
 package com.thex.chat.room.config;
 
-import com.thex.chat.room.messaging.ConnectionEvent;
-import com.thex.chat.room.messaging.JoinRoomRequest;
-import com.thex.chat.room.messaging.LeaveRoomRequest;
-import com.thex.chat.room.messaging.RoomVisitorUpdate;
-import com.thex.chat.room.messaging.RoomVisitors;
+import com.thex.chat.room.messaging.*;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;

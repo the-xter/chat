@@ -1,6 +1,5 @@
 package com.thex.chat.chatapi.config;
 
-import com.thex.chat.chatapi.messaging.ConnectionEvent;
 import com.thex.chat.chatapi.messaging.JoinRoomRequest;
 import com.thex.chat.chatapi.messaging.LeaveRoomRequest;
 import com.thex.chat.chatapi.messaging.RoomVisitorUpdate;
@@ -21,7 +20,6 @@ import java.util.Map;
 public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
-    public static final String CONNECTION_UPDATES_QUEUE = "chatapi.connection-updates";
     public static final String ROOM_VISITORS_QUEUE = "chatapi.room-visitors";
 
     @Bean
@@ -30,18 +28,8 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue connectionUpdatesQueue() {
-        return new Queue(CONNECTION_UPDATES_QUEUE, true);
-    }
-
-    @Bean
     public Queue roomVisitorsQueue() {
         return new Queue(ROOM_VISITORS_QUEUE, true);
-    }
-
-    @Bean
-    public Binding connectionUpdatesBinding(Queue connectionUpdatesQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(connectionUpdatesQueue).to(chatEventsExchange).with("connection.*");
     }
 
     @Bean
@@ -59,7 +47,6 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-            "ConnectionEvent", ConnectionEvent.class,
             "JoinRoomRequest", JoinRoomRequest.class,
             "LeaveRoomRequest", LeaveRoomRequest.class,
             "RoomVisitors", RoomVisitors.class,

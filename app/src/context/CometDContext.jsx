@@ -13,7 +13,6 @@ export function CometDProvider({children}) {
     const {user} = useAuth();
     const [connected, setConnected] = useState(false);
     const [error, setError] = useState(null);
-    const [connections, setConnections] = useState({registered: [], guests: []});
     const [visitors, setVisitors] = useState([]);
     const [currentRoom, setCurrentRoom] = useState(null);
 
@@ -49,24 +48,6 @@ export function CometDProvider({children}) {
                 if (cancelledRef.current) return;
                 if (reply.successful) {
                     setError(null);
-                    cometd.subscribe('/connections', (message) => {
-                        if (cancelledRef.current) return;
-                        const {eventType, connection} = message.data;
-                        setConnections(prev => {
-                            const list = connection.user.type === 'REGISTERED' ? 'registered' : 'guests';
-                            if (eventType === 'CONNECTED') {
-                                return {
-                                    ...prev,
-                                    [list]: [...prev[list], connection]
-                                };
-                            } else {
-                                return {
-                                    ...prev,
-                                    [list]: prev[list].filter(c => c.connectionId !== connection.connectionId)
-                                };
-                            }
-                        });
-                    });
                 } else {
                     setError(reply.error || 'Handshake failed');
                 }
@@ -83,7 +64,6 @@ export function CometDProvider({children}) {
             roomSubRef.current = null;
             roomVisitorSubRef.current = null;
             setConnected(false);
-            setConnections({registered: [], guests: []});
             setVisitors([]);
             setCurrentRoom(null);
         };
@@ -149,7 +129,7 @@ export function CometDProvider({children}) {
     }, [currentRoom]);
 
     return (
-        <CometDContext.Provider value={{connected, error, connections, visitors, currentRoom, joinRoom, leaveRoom}}>
+        <CometDContext.Provider value={{connected, error, visitors, currentRoom, joinRoom, leaveRoom}}>
             {children}
         </CometDContext.Provider>
     );
