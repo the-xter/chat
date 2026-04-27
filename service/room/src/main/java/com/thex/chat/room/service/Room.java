@@ -6,6 +6,7 @@ import com.thex.chat.room.dto.UserType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Room {
@@ -54,5 +55,14 @@ public class Room {
 
     private boolean isVisible(ConnectionInfo viewer, ConnectionInfo subject) {
         return subject.user().type() != UserType.GUEST;
+    }
+
+    public boolean hasUser(UserInfo user) {
+        return connections.values().stream()
+            .anyMatch(connection -> sameUser(connection.user(), user));
+    }
+
+    private boolean sameUser(UserInfo user1, UserInfo user2) {
+        return Objects.equals(user1.id(), user2.id()) && user2.type() == user1.type();
     }
 }

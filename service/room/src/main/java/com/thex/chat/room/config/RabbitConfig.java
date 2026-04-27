@@ -1,5 +1,6 @@
 package com.thex.chat.room.config;
 
+import com.thex.chat.room.messaging.ConnectionEvent;
 import com.thex.chat.room.messaging.JoinRoomRequest;
 import com.thex.chat.room.messaging.LeaveRoomRequest;
 import com.thex.chat.room.messaging.RoomVisitorUpdate;
@@ -43,6 +44,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding connectionDisconnectedBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("connection.disconnected");
+    }
+
+    @Bean
     public MessageConverter messageConverter() {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
@@ -50,7 +56,8 @@ public class RabbitConfig {
             "JoinRoomRequest", JoinRoomRequest.class,
             "LeaveRoomRequest", LeaveRoomRequest.class,
             "RoomVisitors", RoomVisitors.class,
-            "RoomVisitorUpdate", RoomVisitorUpdate.class
+            "RoomVisitorUpdate", RoomVisitorUpdate.class,
+            "ConnectionEvent", ConnectionEvent.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();

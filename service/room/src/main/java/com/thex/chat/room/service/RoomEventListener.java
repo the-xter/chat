@@ -1,6 +1,7 @@
 package com.thex.chat.room.service;
 
 import com.thex.chat.room.config.RabbitConfig;
+import com.thex.chat.room.messaging.ConnectionEvent;
 import com.thex.chat.room.messaging.JoinRoomRequest;
 import com.thex.chat.room.messaging.LeaveRoomRequest;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,13 @@ public class RoomEventListener {
     @RabbitHandler
     public void handleLeave(LeaveRoomRequest event) {
         roomStateService.handleLeave(event);
+    }
+
+    @RabbitHandler
+    public void handleConnectionEvent(ConnectionEvent event) {
+        if ("DISCONNECTED".equals(event.eventType())) {
+            roomStateService.handleDisconnect(event.connection().connectionId());
+        }
     }
 
     @RabbitHandler(isDefault = true)

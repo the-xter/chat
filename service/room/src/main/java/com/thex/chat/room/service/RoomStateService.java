@@ -62,19 +62,29 @@ public class RoomStateService {
         log.info("leave room event {}", event);
 
         ConnectionInfo leavingConnection = event.connectionInfo();
-        String connectionId = leavingConnection.connectionId();
         Room room = rooms.get(event.roomId());
         if (room == null) {
             return;
         }
+        removeFromRoom(room, leavingConnection.connectionId());
+    }
+
+    void handleDisconnect(String connectionId) {
+        log.info("disconnect event for connection {}", connectionId);
+        rooms.values().forEach(room -> removeFromRoom(room, connectionId));
+    }
+
+    private void removeFromRoom(Room room, String connectionId) {
         ConnectionInfo removed = room.removeConnection(connectionId);
         if (removed == null) {
             return;
         }
-
-        notifyVisitorLeft(room, leavingConnection);
+        if (room.hasUser(removed.user())) {  //a single user can have multiple connections in a room
+            return;
+        }
+        notifyVisitorLeft(room, removed);
         if (room.isEmpty()) {
-            rooms.remove(event.roomId(), room);
+            rooms.remove(room.roomId(), room);
         }
     }
 
