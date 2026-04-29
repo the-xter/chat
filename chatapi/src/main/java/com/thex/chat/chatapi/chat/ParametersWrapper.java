@@ -2,6 +2,7 @@ package com.thex.chat.chatapi.chat;
 
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class ParametersWrapper {
     private final Map<String, Object> data;
 
@@ -67,6 +68,7 @@ public class ParametersWrapper {
         return (Object[]) data.get(name);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T[] getArray(String name) {
         return (T[]) data.get(name);
     }

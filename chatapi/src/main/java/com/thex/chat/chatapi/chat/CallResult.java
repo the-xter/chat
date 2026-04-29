@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@SuppressWarnings("unused")
 public class CallResult {
     static private final String CODE = "code";
     static private final String OK = "ok";
@@ -55,9 +56,9 @@ public class CallResult {
         return this;
     }
 
-//    public String getString(String key) {
-//        return String.valueOf(data.get(key));
-//    }
+    public String getString(String key) {
+        return String.valueOf(data.get(key));
+    }
 
     public Object get(String key) {
         return data.get(key);

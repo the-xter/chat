@@ -13,7 +13,7 @@ public class AbstractServiceDispatcher {
     static final String REQUEST_ID = "req";
     static final String METHOD = "action";
 
-    static String ERROR_METHOD_UNKNOWN = "error.method.unknown";
+    static final String ERROR_METHOD_UNKNOWN = "error.method.unknown";
 
     private final String serviceName;
     private final CallBackInvoker callBackInvoker;
