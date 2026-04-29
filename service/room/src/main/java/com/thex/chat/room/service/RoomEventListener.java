@@ -30,8 +30,10 @@ public class RoomEventListener {
 
     @RabbitHandler
     public void handleConnectionEvent(ConnectionEvent event) {
-        if ("DISCONNECTED".equals(event.eventType())) {
-            roomStateService.handleDisconnect(event.connection());
+        switch (event.eventType()) {
+            case "CONNECTED" -> roomStateService.handleConnect(event.connection());
+            case "DISCONNECTED" -> roomStateService.handleDisconnect(event.connection());
+            default -> log.warn("Unknown connection event type: {}", event.eventType());
         }
     }
 

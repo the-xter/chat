@@ -40,6 +40,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding connectionConnectedBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("connection.connected");
+    }
+
+    @Bean
     public Binding connectionDisconnectedBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
         return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("connection.disconnected");
     }

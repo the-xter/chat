@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -21,14 +22,20 @@ public class RoomStateService {
     private final ConnectionServiceClient connectionService;
 
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+    private final Set<String> aliveConnections = ConcurrentHashMap.newKeySet();
+
+    void handleConnect(ConnectionInfo connection) {
+        log.info("connect event for connection {}", connection);
+        aliveConnections.add(connection.connectionId());
+    }
 
     void handleJoin(JoinRoomRequest event) {
         log.info("join room event {}", event);
 
         ConnectionInfo joiningConnection = event.connectionInfo();
         String connectionId = joiningConnection.connectionId();
-        if (!connectionService.isConnectionAlive(connectionId)) {
-            log.info("Ignoring join for room {} because connection {} is not alive", event.roomId(), connectionId);
+        if (!isAlive(connectionId)) {
+            log.info("Ignoring join request because connection is not alive: {}", event);
             return;
         }
 
@@ -40,6 +47,18 @@ public class RoomStateService {
         if (userNewlyJoined) {
             notifyVisitorJoined(room, joiningConnection);
         }
+    }
+
+    private boolean isAlive(String connectionId) {
+        if (aliveConnections.contains(connectionId)) {
+            return true;
+        }
+        //the connect event may not have been delivered yet; ask the connection service
+        if (connectionService.isConnectionAlive(connectionId)) {
+            aliveConnections.add(connectionId);
+            return true;
+        }
+        return false;
     }
 
     private void sendRoomVisitors(Room room, ConnectionInfo connection) {
@@ -74,6 +93,7 @@ public class RoomStateService {
 
     void handleDisconnect(ConnectionInfo connection) {
         log.info("disconnect event for connection {}", connection);
+        aliveConnections.remove(connection.connectionId());
         rooms.values().forEach(room -> removeFromRoom(room, connection));
     }
 
