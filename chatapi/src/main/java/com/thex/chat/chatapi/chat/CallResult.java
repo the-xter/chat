@@ -73,7 +73,7 @@ public class CallResult {
     }
 
     boolean isOk() {
-        return OK == data.get(CODE);
+        return OK.equals(data.get(CODE));
     }
 
     boolean isOptional() {

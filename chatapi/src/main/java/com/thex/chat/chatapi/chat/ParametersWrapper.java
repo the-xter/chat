@@ -64,15 +64,6 @@ public class ParametersWrapper {
         return result == null ? defaultValue : result;
     }
 
-    public Object[] getObjArray(String name) {
-        return (Object[]) data.get(name);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T[] getArray(String name) {
-        return (T[]) data.get(name);
-    }
-
     @Override
     public String toString() {
         return "{" +
