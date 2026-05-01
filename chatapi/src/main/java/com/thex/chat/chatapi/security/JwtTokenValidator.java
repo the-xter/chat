@@ -6,6 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Role;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)  //to avoid post-processing warning
 @Component
+@Slf4j
 public class JwtTokenValidator {
 
     private final SecretKey key;
@@ -30,11 +32,11 @@ public class JwtTokenValidator {
             .build()
             .parseSignedClaims(token)
             .getPayload();
-        return new UserInfo(
-            String.valueOf(payload.get("userId", Integer.class)),
-            payload.getSubject(),
-            UserType.REGISTERED
-        );
+
+        String userId = Integer.toString(Integer.parseInt(payload.getSubject()));
+        String username = payload.get("username", String.class);
+
+        return new UserInfo(userId, username, UserType.REGISTERED);
     }
 
     public boolean validateToken(String token) {

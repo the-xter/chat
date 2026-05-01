@@ -24,21 +24,21 @@ class JwtTokenValidatorTest {
 
     @Test
     void validateToken_returnsTrue_forFreshSignedToken() {
-        String token = signed(SECRET, "alice", 42, Instant.now().plusSeconds(60));
+        String token = signedCurrent(SECRET, 1, "fresh", Instant.now().plusSeconds(60));
 
         assertThat(validator.validateToken(token)).isTrue();
     }
 
     @Test
     void validateToken_returnsFalse_forExpiredToken() {
-        String token = signed(SECRET, "alice", 42, Instant.now().minusSeconds(60));
+        String token = signedCurrent(SECRET, 2, "expired", Instant.now().minusSeconds(60));
 
         assertThat(validator.validateToken(token)).isFalse();
     }
 
     @Test
     void validateToken_returnsFalse_forWrongSignature() {
-        String token = signed(OTHER_SECRET, "alice", 42, Instant.now().plusSeconds(60));
+        String token = signedCurrent(OTHER_SECRET, 3, "wrong-sig", Instant.now().plusSeconds(60));
 
         assertThat(validator.validateToken(token)).isFalse();
     }
@@ -50,33 +50,17 @@ class JwtTokenValidatorTest {
     }
 
     @Test
-    void getUserFromToken_extractsSubjectAndUserIdAsRegistered() {
-        String token = signed(SECRET, "alice", 42, Instant.now().plusSeconds(60));
+    void getUserFromToken_readsIdFromSubjectAndUsernameFromClaim() {
+        String token = signedCurrent(SECRET, 100, "bob", Instant.now().plusSeconds(60));
 
         UserInfo user = validator.getUserFromToken(token);
 
-        assertThat(user).isEqualTo(new UserInfo("42", "alice", UserType.REGISTERED));
-    }
-
-    @Test
-    void getUserFromToken_returnsLiteralNullString_whenUserIdClaimMissing() {
-        // Documents current behaviour: String.valueOf((Integer) null) yields "null".
-        String token = Jwts.builder()
-            .subject("alice")
-            .expiration(Date.from(Instant.now().plusSeconds(60)))
-            .signWith(key(SECRET))
-            .compact();
-
-        UserInfo user = validator.getUserFromToken(token);
-
-        assertThat(user.id()).isEqualTo("null");
-        assertThat(user.name()).isEqualTo("alice");
-        assertThat(user.type()).isEqualTo(UserType.REGISTERED);
+        assertThat(user).isEqualTo(new UserInfo("100", "bob", UserType.REGISTERED));
     }
 
     @Test
     void getUserFromToken_throws_whenSignatureInvalid() {
-        String token = signed(OTHER_SECRET, "alice", 42, Instant.now().plusSeconds(60));
+        String token = signedCurrent(OTHER_SECRET, 5, "invalid-sig", Instant.now().plusSeconds(60));
 
         assertThatThrownBy(() -> validator.getUserFromToken(token))
             .isInstanceOf(JwtException.class);
@@ -86,10 +70,13 @@ class JwtTokenValidatorTest {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static String signed(String secret, String subject, Integer userId, Instant expiry) {
+    /**
+     * Builds a token in the current format: subject = userId, username carried as a claim.
+     */
+    private static String signedCurrent(String secret, Integer userId, String username, Instant expiry) {
         return Jwts.builder()
-            .subject(subject)
-            .claim("userId", userId)
+            .subject(String.valueOf(userId))
+            .claim("username", username)
             .expiration(Date.from(expiry))
             .signWith(key(secret))
             .compact();
