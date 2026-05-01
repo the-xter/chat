@@ -52,7 +52,7 @@ public class RabbitConfig {
             "RoomVisitors", RoomVisitors.class,
             "RoomVisitorUpdate", RoomVisitorUpdate.class
         ));
-        classMapper.setTrustedPackages("*");
+        classMapper.setTrustedPackages("com.thex.chat.chatapi.messaging");
         classMapper.afterPropertiesSet();
         converter.setClassMapper(classMapper);
         return converter;

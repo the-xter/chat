@@ -45,6 +45,10 @@ public class CometDConfig {
     public BayeuxServer bayeuxServer(JwtHandshakePolicy jwtHandshakePolicy) {
         var bayeux = new BayeuxServerImpl();
         bayeux.setOption("ws.cometdURLMapping", "/cometd/*");
+        bayeux.setOption("maxMessageSize", 65536);
+        bayeux.setOption("ws.maxMessageSize", 65536);
+        bayeux.setOption("maxInterval", 30000);
+        bayeux.setOption("timeout", 30000);
         bayeux.setSecurityPolicy(jwtHandshakePolicy);
         return bayeux;
     }
