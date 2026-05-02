@@ -32,20 +32,10 @@ export function CometDProvider({children}) {
             const clientId = cometd.getClientId?.();
             if (!clientId) return;
 
-            const messages = [];
-            let id = 1;
             if (currentRoomRef.current) {
-                messages.push({
-                    channel: '/service/room',
-                    data: {action: 'leave', roomId: currentRoomRef.current},
-                    clientId,
-                    id: String(id++),
-                });
+                cometd.publish('/service/room', {action: 'leave', roomId: currentRoomRef.current});
             }
-            messages.push({channel: '/meta/disconnect', clientId, id: String(id++)});
-
-            const blob = new Blob([JSON.stringify(messages)], {type: 'application/json'});
-            navigator.sendBeacon(cometdURL, blob);
+            cometd.disconnect();
         };
         window.addEventListener('pagehide', handlePageHide);
 
