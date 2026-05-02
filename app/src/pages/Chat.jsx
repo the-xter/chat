@@ -1,3 +1,4 @@
+import {useEffect, useRef} from 'react';
 import {useCometD, visitorKey} from '../context/CometDContext';
 import {useAuth} from '../context/AuthContext';
 import './Chat.css';
@@ -7,6 +8,21 @@ const ROOM_ID = 'general';
 export default function Chat() {
     const {user} = useAuth();
     const {connected, error, visitors, currentRoom, joinRoom, leaveRoom} = useCometD();
+
+    const leaveRoomRef = useRef(leaveRoom);
+    leaveRoomRef.current = leaveRoom;
+
+    useEffect(() => {
+        if (connected && !currentRoom) {
+            joinRoom(ROOM_ID);
+        }
+    }, [connected, currentRoom, joinRoom]);
+
+    useEffect(() => {
+        return () => {
+            leaveRoomRef.current();
+        };
+    }, []);
 
     if (error) {
         return (
@@ -28,19 +44,10 @@ export default function Chat() {
                     : 'Connecting...'}
             </div>
 
-            {connected && !currentRoom && (
-                <button className="join-room-btn" onClick={() => joinRoom(ROOM_ID)}>
-                    Join Room
-                </button>
-            )}
-
             {currentRoom && (
                 <div className="room-panel">
                     <div className="room-header">
                         <h2>Room: {currentRoom}</h2>
-                        <button className="leave-room-btn" onClick={leaveRoom}>
-                            Leave
-                        </button>
                     </div>
                     <div className="room-members">
                         <h3>Visitors ({visitors.length})</h3>
