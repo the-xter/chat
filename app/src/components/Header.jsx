@@ -38,6 +38,15 @@ export default function Header() {
                             {menuOpen && (
                                 <div className="avatar-dropdown">
                                     <div className="avatar-dropdown-name">{user.username}</div>
+                                    {user.roles?.includes('ADMIN') && (
+                                        <Link
+                                            to="/users"
+                                            className="avatar-dropdown-link"
+                                            onClick={() => setMenuOpen(false)}
+                                        >
+                                            Users
+                                        </Link>
+                                    )}
                                     <button
                                         className="avatar-dropdown-logout"
                                         onClick={() => {
