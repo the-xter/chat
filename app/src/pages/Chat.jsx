@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import {useEffect} from 'react';
 import {useCometD, visitorKey} from '../context/CometDContext';
 import {useAuth} from '../context/AuthContext';
 import './Chat.css';
@@ -7,22 +7,13 @@ const ROOM_ID = 'general';
 
 export default function Chat() {
     const {user} = useAuth();
-    const {connected, error, visitors, currentRoom, joinRoom, leaveRoom} = useCometD();
-
-    const leaveRoomRef = useRef(leaveRoom);
-    leaveRoomRef.current = leaveRoom;
+    const {connected, error, visitors, currentRoom, joinRoom} = useCometD();
 
     useEffect(() => {
         if (connected && !currentRoom) {
             joinRoom(ROOM_ID);
         }
     }, [connected, currentRoom, joinRoom]);
-
-    useEffect(() => {
-        return () => {
-            leaveRoomRef.current();
-        };
-    }, []);
 
     if (error) {
         return (

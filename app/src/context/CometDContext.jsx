@@ -20,6 +20,8 @@ export function CometDProvider({children}) {
     const roomSubRef = useRef(null);
     const roomVisitorSubRef = useRef(null);
     const cancelledRef = useRef(false);
+    const currentRoomRef = useRef(null);
+    currentRoomRef.current = currentRoom;
 
     useEffect(() => {
         let cometd = null;
@@ -58,7 +60,13 @@ export function CometDProvider({children}) {
             cancelledRef.current = true;
             clearTimeout(timer);
             if (cometd) {
-                cometd.disconnect();
+                const roomToLeave = currentRoomRef.current;
+                cometd.batch(() => {
+                    if (roomToLeave) {
+                        cometd.publish('/service/room', {action: 'leave', roomId: roomToLeave});
+                    }
+                    cometd.disconnect();
+                });
             }
             cometdRef.current = null;
             roomSubRef.current = null;
