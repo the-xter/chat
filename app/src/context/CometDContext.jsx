@@ -24,6 +24,31 @@ export function CometDProvider({children}) {
     currentRoomRef.current = currentRoom;
 
     useEffect(() => {
+        const cometdURL = `${window.location.protocol}//${window.location.host}/cometd`;
+
+        const handlePageHide = () => {
+            const cometd = cometdRef.current;
+            if (!cometd) return;
+            const clientId = cometd.getClientId?.();
+            if (!clientId) return;
+
+            const messages = [];
+            let id = 1;
+            if (currentRoomRef.current) {
+                messages.push({
+                    channel: '/service/room',
+                    data: {action: 'leave', roomId: currentRoomRef.current},
+                    clientId,
+                    id: String(id++),
+                });
+            }
+            messages.push({channel: '/meta/disconnect', clientId, id: String(id++)});
+
+            const blob = new Blob([JSON.stringify(messages)], {type: 'application/json'});
+            navigator.sendBeacon(cometdURL, blob);
+        };
+        window.addEventListener('pagehide', handlePageHide);
+
         let cometd = null;
         cancelledRef.current = false;
 
@@ -31,7 +56,6 @@ export function CometDProvider({children}) {
             cometd = new CometD();
             cometdRef.current = cometd;
 
-            const cometdURL = `${window.location.protocol}//${window.location.host}/cometd`;
             cometd.configure({url: cometdURL});
 
             cometd.addListener('/meta/connect', (message) => {
@@ -59,6 +83,7 @@ export function CometDProvider({children}) {
         return () => {
             cancelledRef.current = true;
             clearTimeout(timer);
+            window.removeEventListener('pagehide', handlePageHide);
             if (cometd) {
                 const roomToLeave = currentRoomRef.current;
                 cometd.batch(() => {
