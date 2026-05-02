@@ -1,12 +1,10 @@
 import {useEffect} from 'react';
 import {useCometD, visitorKey} from '../context/CometDContext';
-import {useAuth} from '../context/AuthContext';
 import './Chat.css';
 
 const ROOM_ID = 'general';
 
 export default function Chat() {
-    const {user} = useAuth();
     const {connected, error, visitors, currentRoom, joinRoom} = useCometD();
 
     useEffect(() => {
@@ -27,33 +25,24 @@ export default function Chat() {
     }
 
     return (
-        <div className="page">
-            <h1>Chat</h1>
-            <div className="connection-status">
-                {connected
-                    ? 'Connected' + (user ? ` as ${user.username}` : ' as Guest')
-                    : 'Connecting...'}
-            </div>
-
-            {currentRoom && (
-                <div className="room-panel">
-                    <div className="room-header">
-                        <h2>Room: {currentRoom}</h2>
-                    </div>
-                    <div className="room-members">
-                        <h3>Visitors ({visitors.length})</h3>
-                        <ul className="members-list">
-                            {visitors.map((visitor) => (
-                                <li key={visitorKey(visitor)} className="member">{visitor.name}</li>
-                            ))}
-                            {visitors.length === 0 && (
-                                <li className="member empty">No visitors yet</li>
-                            )}
-                        </ul>
-                    </div>
-                </div>
-            )}
-
+        <div className="chat-layout">
+            <aside className="visitors-pane">
+                <ul className="members-list">
+                    {visitors.map((visitor) => (
+                        <li key={visitorKey(visitor)} className="member">{visitor.name}</li>
+                    ))}
+                    {visitors.length === 0 && (
+                        <li className="member empty">No visitors yet</li>
+                    )}
+                </ul>
+            </aside>
+            <section className="messages-pane">
+                <div className="messages-area"></div>
+                <form className="message-bar" onSubmit={(e) => e.preventDefault()}>
+                    <input type="text" placeholder="Type a message..."/>
+                    <button type="submit">Send</button>
+                </form>
+            </section>
         </div>
     );
 }

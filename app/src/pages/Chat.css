@@ -1,38 +1,48 @@
-.connection-status {
-    margin: 12px 0;
-    padding: 8px 14px;
-    border-radius: 4px;
-    font-size: 14px;
-    background: #f0fdf4;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
+.chat-layout {
+    display: flex;
+    gap: 16px;
+    height: calc(100vh - 56px);
+    padding: 16px;
+    box-sizing: border-box;
 }
 
-.room-panel {
-    margin: 16px 0;
+.visitors-pane {
+    width: 25%;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 16px;
+    overflow-y: auto;
 }
 
-.room-header {
+.messages-pane {
+    flex: 1;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
 }
 
-.room-header h2 {
-    margin: 0;
-    font-size: 18px;
+.messages-area {
+    flex: 1;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    overflow-y: auto;
 }
 
-.room-members h3 {
-    margin-bottom: 8px;
-    font-size: 14px;
-    text-transform: uppercase;
-    color: #6b7280;
+.message-bar {
+    display: flex;
+    gap: 8px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 12px;
+}
+
+.message-bar input {
+    flex: 1;
 }
 
 .members-list {
