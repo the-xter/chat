@@ -5,6 +5,7 @@ import com.thex.chat.room.dto.UserInfo;
 import com.thex.chat.room.dto.UserType;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,17 +50,24 @@ public class Room {
     }
 
     public List<ConnectionInfo> recipientsForLeave(ConnectionInfo leavingConnection) {
+        if (isGuest(leavingConnection)) {
+            return Collections.emptyList();
+        }
         return connections.values().stream()
             .filter(viewer -> !viewer.connectionId().equals(leavingConnection.connectionId()))
             .toList();
     }
 
     private boolean isVisible(ConnectionInfo viewer, ConnectionInfo subject) {
-        return subject.user().type() != UserType.GUEST;
+        return !isGuest(subject);
     }
 
     public boolean hasUser(UserInfo user) {
         return connections.values().stream()
             .anyMatch(connection -> connection.user().equals(user));  //the equals method is overridden for records
+    }
+
+    private boolean isGuest(ConnectionInfo connection) {
+        return connection.user().type() == UserType.GUEST;
     }
 }
