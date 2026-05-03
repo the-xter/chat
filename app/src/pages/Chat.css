@@ -34,15 +34,144 @@
 
 .message-bar {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 12px;
+    padding: 8px;
 }
 
-.message-bar input {
+.format-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.format-color {
+    box-sizing: border-box;
+    width: 22px;
+    height: 22px;
+    padding: 4px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+}
+
+.format-color:hover {
+    border-color: #d1d5db;
+}
+
+.format-color::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.format-color::-webkit-color-swatch {
+    border: none;
+    border-radius: 3px;
+}
+
+.format-color::-moz-color-swatch {
+    border: none;
+    border-radius: 3px;
+}
+
+.font-style-control {
+    position: relative;
+}
+
+.font-style-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: #fff;
+    font-family: serif;
+    font-size: 14px;
+    color: #374151;
+    cursor: default;
+    user-select: none;
+}
+
+.font-style-control:hover .font-style-trigger,
+.font-style-control.open .font-style-trigger {
+    border-color: #d1d5db;
+}
+
+.font-style-popover {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 3px;
+    display: none;
+    flex-direction: row;
+    gap: 2px;
+    padding: 4px 6px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+}
+
+.font-style-control.open .font-style-popover {
+    display: flex;
+}
+
+.style-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+}
+
+.style-letter:hover {
+    background: #eef2ff;
+    color: #1d4ed8;
+}
+
+.style-bold {
+    font-weight: 700;
+}
+
+.style-italic {
+    font-style: italic;
+}
+
+.style-underline {
+    text-decoration: underline;
+}
+
+.message-input-row {
+    display: flex;
+    gap: 6px;
+}
+
+.message-input {
     flex: 1;
+    min-height: 1.2em;
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #fff;
+    outline: none;
+    font: inherit;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.message-input:focus {
+    border-color: #3b82f6;
 }
 
 .members-list {

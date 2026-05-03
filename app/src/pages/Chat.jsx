@@ -1,17 +1,91 @@
-import {useEffect} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useCometD, visitorKey} from '../context/CometDContext';
 import './Chat.css';
 
 const ROOM_ID = 'general';
 
+const STYLE_LETTERS = [
+    {letter: 'B', command: 'bold', className: 'style-bold'},
+    {letter: 'I', command: 'italic', className: 'style-italic'},
+    {letter: 'U', command: 'underline', className: 'style-underline'},
+];
+
 export default function Chat() {
     const {connected, error, visitors, currentRoom, joinRoom} = useCometD();
+    const editorRef = useRef(null);
+    const savedRangeRef = useRef(null);
+    const styleControlRef = useRef(null);
+    const [stylePopoverOpen, setStylePopoverOpen] = useState(false);
+    const [selectedStyle, setSelectedStyle] = useState('A');
 
     useEffect(() => {
         if (connected && !currentRoom) {
             joinRoom(ROOM_ID);
         }
     }, [connected, currentRoom, joinRoom]);
+
+    useEffect(() => {
+        if (!stylePopoverOpen) return;
+        const handler = (e) => {
+            if (styleControlRef.current && !styleControlRef.current.contains(e.target)) {
+                setStylePopoverOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [stylePopoverOpen]);
+
+    const saveSelection = () => {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return;
+        const range = sel.getRangeAt(0);
+        if (editorRef.current && editorRef.current.contains(range.commonAncestorContainer)) {
+            savedRangeRef.current = range.cloneRange();
+        }
+    };
+
+    const restoreSelection = () => {
+        const range = savedRangeRef.current;
+        if (!range || !editorRef.current) return false;
+        editorRef.current.focus();
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        return true;
+    };
+
+    const applyStyle = (command, value = null) => {
+        if (!editorRef.current) return;
+        if (!restoreSelection()) {
+            editorRef.current.focus();
+        }
+        document.execCommand(command, false, value);
+        saveSelection();
+    };
+
+    const handleStyleLetter = (e, {letter, command}) => {
+        e.preventDefault();
+        applyStyle(command);
+        setSelectedStyle(prev => (prev === letter ? 'A' : letter));
+        setStylePopoverOpen(false);
+    };
+
+    const handleEditorKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    };
+
+    const handleEditorPaste = (e) => {
+        e.preventDefault();
+        const text = e.clipboardData.getData('text');
+        const singleLine = text.replace(/[\r\n]+/g, ' ');
+        if (singleLine) {
+            document.execCommand('insertText', false, singleLine);
+        }
+    };
+
+    const triggerClassName = STYLE_LETTERS.find(s => s.letter === selectedStyle)?.className ?? '';
 
     if (error) {
         return (
@@ -39,8 +113,50 @@ export default function Chat() {
             <section className="messages-pane">
                 <div className="messages-area"></div>
                 <form className="message-bar" onSubmit={(e) => e.preventDefault()}>
-                    <input type="text" placeholder="Type a message..."/>
-                    <button type="submit">Send</button>
+                    <div className="format-toolbar">
+                        <input
+                            type="color"
+                            className="format-color"
+                            title="Text color"
+                            onMouseDown={saveSelection}
+                            onChange={(e) => applyStyle('foreColor', e.target.value)}
+                        />
+                        <div
+                            ref={styleControlRef}
+                            className={`font-style-control${stylePopoverOpen ? ' open' : ''}`}
+                        >
+                            <span
+                                className={`font-style-trigger ${triggerClassName}`}
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    setStylePopoverOpen(o => !o);
+                                }}
+                            >{selectedStyle}</span>
+                            <div className="font-style-popover">
+                                {STYLE_LETTERS.map(s => (
+                                    <span
+                                        key={s.letter}
+                                        className={`style-letter ${s.className}`}
+                                        onMouseDown={(e) => handleStyleLetter(e, s)}
+                                    >{s.letter}</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="message-input-row">
+                        <div
+                            ref={editorRef}
+                            className="message-input"
+                            contentEditable
+                            suppressContentEditableWarning
+                            onMouseUp={saveSelection}
+                            onKeyUp={saveSelection}
+                            onKeyDown={handleEditorKeyDown}
+                            onPaste={handleEditorPaste}
+                            onBlur={saveSelection}
+                        />
+                        <button type="submit">Send</button>
+                    </div>
                 </form>
             </section>
         </div>
