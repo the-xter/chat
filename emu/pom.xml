@@ -57,6 +57,11 @@
             <groupId>org.eclipse.jetty.ee11.websocket</groupId>
             <artifactId>jetty-ee11-websocket-jakarta-client</artifactId>
         </dependency>
+        <!-- Jetty util-ajax (required by CometD for JSON parsing) -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util-ajax</artifactId>
+        </dependency>
 
         <!-- Test -->
         <dependency>
