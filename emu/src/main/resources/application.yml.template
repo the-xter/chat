@@ -1,0 +1,19 @@
+spring:
+  main:
+    web-application-type: none
+
+server:
+  port: 0
+
+emu:
+  auth-url: http://localhost:8080
+  cometd-url: http://localhost:8081/cometd
+  users:
+    - name: USER1_NAME
+      password: USER1_PASSWORD
+    - name: USER2_NAME
+      password: USER2_PASSWORD
+
+logging:
+  level:
+    com.thex.chat.emu: INFO
