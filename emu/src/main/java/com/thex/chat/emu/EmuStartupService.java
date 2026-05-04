@@ -10,6 +10,7 @@ import org.cometd.client.websocket.jakarta.WebSocketTransport;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -34,7 +35,10 @@ public class EmuStartupService {
         }
 
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        RestClient authClient = RestClient.builder().baseUrl(properties.authUrl()).build();
+        RestClient authClient = RestClient.builder()
+            .baseUrl(properties.authUrl())
+            .requestFactory(new SimpleClientHttpRequestFactory())
+            .build();
 
         for (EmuProperties.EmuUser user : users) {
             try {
