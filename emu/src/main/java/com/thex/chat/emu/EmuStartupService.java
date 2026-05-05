@@ -17,6 +17,11 @@ import org.springframework.web.client.RestClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Slf4j
 @Component
@@ -27,7 +32,7 @@ public class EmuStartupService {
     private final List<BayeuxClient> clients = new ArrayList<>();
 
     @EventListener(ApplicationReadyEvent.class)
-    public void connectAll() {
+    public void connectAll() throws InterruptedException {
         List<EmuProperties.EmuUser> users = properties.users();
         if (users == null || users.isEmpty()) {
             log.info("No emulator users configured");
@@ -40,13 +45,30 @@ public class EmuStartupService {
             .requestFactory(new SimpleClientHttpRequestFactory())
             .build();
 
-        for (EmuProperties.EmuUser user : users) {
-            try {
-                String token = login(authClient, user);
-                clients.add(connect(container, user.name(), token));
-            } catch (Exception e) {
-                log.error("Failed to connect emulator user {}: {}", user.name(), e.getMessage());
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            List<Callable<BayeuxClient>> tasks = users.stream()
+                .<Callable<BayeuxClient>>map(user -> () -> loginAndConnect(authClient, container, user))
+                .toList();
+            List<Future<BayeuxClient>> futures = executor.invokeAll(tasks);
+            for (Future<BayeuxClient> future : futures) {
+                try {
+                    BayeuxClient client = future.get();
+                    if (client != null) {
+                        clients.add(client);
+                    }
+                } catch (ExecutionException ignored) {
+                }
             }
+        }
+    }
+
+    private BayeuxClient loginAndConnect(RestClient authClient, WebSocketContainer container, EmuProperties.EmuUser user) {
+        try {
+            String token = login(authClient, user);
+            return connect(container, user.name(), token);
+        } catch (Exception e) {
+            log.error("Failed to connect emulator user {}: {}", user.name(), e.getMessage());
+            return null;
         }
     }
 
