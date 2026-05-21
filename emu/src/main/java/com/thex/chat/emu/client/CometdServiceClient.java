@@ -33,8 +33,9 @@ public class CometdServiceClient {
                 log.info("CometD handshake successful for {}", username);
                 future.complete(client);
             } else {
-                //TODO repeats on handshake failure (cometD tries to reconnect)
                 log.error("CometD handshake failed for {}: {}", username, message);
+                // Stop CometD from retrying the handshake.
+                client.abort();
                 future.complete(null);
             }
         });
