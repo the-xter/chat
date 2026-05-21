@@ -16,9 +16,14 @@ import java.util.concurrent.*;
 public class CometdServiceClient {
 
     private final String cometdUrl;
+    private final String roomServiceChannel;
 
-    public CometdServiceClient(@Value("${emu.cometd-url}") String cometdUrl) {
+    public CometdServiceClient(
+        @Value("${emu.cometd-url}") String cometdUrl,
+        @Value("${emu.room-service-channel:/service/room}") String roomServiceChannel
+    ) {
         this.cometdUrl = cometdUrl;
+        this.roomServiceChannel = roomServiceChannel;
     }
 
     public BayeuxClient connect(String username, String token) {
@@ -56,5 +61,17 @@ public class CometdServiceClient {
 
     public void disconnect(BayeuxClient bayeuxClient) {
         bayeuxClient.disconnect();
+    }
+
+    public void joinRoom(BayeuxClient bayeuxClient, String roomId) {
+        log.info("Joining room {}", roomId);
+        bayeuxClient.getChannel(roomServiceChannel)
+            .publish(Map.of("action", "join", "roomId", roomId));
+    }
+
+    public void leaveRoom(BayeuxClient bayeuxClient, String roomId) {
+        log.info("Leaving room {}", roomId);
+        bayeuxClient.getChannel(roomServiceChannel)
+            .publish(Map.of("action", "leave", "roomId", roomId));
     }
 }

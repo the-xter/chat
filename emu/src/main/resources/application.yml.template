@@ -8,6 +8,7 @@ server:
 emu:
   auth-url: http://localhost:8080
   cometd-url: http://localhost:8081/cometd
+  room-service-channel: /service/room
   users:
     - name: USER1_NAME
       password: USER1_PASSWORD
