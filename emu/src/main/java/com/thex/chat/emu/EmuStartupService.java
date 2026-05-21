@@ -1,118 +1,55 @@
 package com.thex.chat.emu;
 
-import jakarta.annotation.PreDestroy;
-import jakarta.websocket.ContainerProvider;
-import jakarta.websocket.WebSocketContainer;
+import com.thex.chat.emu.script.Script;
+import com.thex.chat.emu.script.ScriptsLibrary;
+import com.thex.chat.emu.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.cometd.client.BayeuxClient;
-import org.cometd.client.websocket.jakarta.WebSocketTransport;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class EmuStartupService {
-
     private final EmuProperties properties;
-    private final List<BayeuxClient> clients = new ArrayList<>();
+    private final ScriptsLibrary library;
 
     @EventListener(ApplicationReadyEvent.class)
-    public void connectAll() throws InterruptedException {
+    public void connectAll() {
         List<EmuProperties.EmuUser> users = properties.users();
         if (users == null || users.isEmpty()) {
             log.info("No emulator users configured");
             return;
         }
 
-        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        RestClient authClient = RestClient.builder()
-            .baseUrl(properties.authUrl())
-            .requestFactory(new SimpleClientHttpRequestFactory())
-            .build();
-
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<Callable<BayeuxClient>> tasks = users.stream()
-                .<Callable<BayeuxClient>>map(user -> () -> loginAndConnect(authClient, container, user))
-                .toList();
-            List<Future<BayeuxClient>> futures = executor.invokeAll(tasks);
-            for (Future<BayeuxClient> future : futures) {
-                try {
-                    BayeuxClient client = future.get();
-                    if (client != null) {
-                        clients.add(client);
-                    }
-                } catch (ExecutionException ignored) {
-                }
+            for (var user : users) {
+                executor.execute(() -> runUser(user));
             }
         }
     }
 
-    private BayeuxClient loginAndConnect(RestClient authClient, WebSocketContainer container, EmuProperties.EmuUser user) {
-        try {
-            String token = login(authClient, user);
-            return connect(container, user.name(), token);
-        } catch (Exception e) {
-            log.error("Failed to connect emulator user {}: {}", user.name(), e.getMessage());
-            return null;
-        }
-    }
-
-    @PreDestroy
-    public void disconnectAll() {
-        for (BayeuxClient client : clients) {
+    private final AtomicInteger runCounter = new AtomicInteger();
+    private void runUser(EmuProperties.EmuUser credentials) {
+        boolean allOk = true;
+        while (allOk) {
+            int runId = runCounter.incrementAndGet();
+            Script script = library.pickScript();
+            User user = new User(credentials.name(), credentials.password());
+            log.info("Run script {} with runId {} for {}", script, runId, user);
             try {
-                client.disconnect();
+                script.perform(user, runId);
             } catch (Exception e) {
-                log.warn("Disconnect failed: {}", e.getMessage());
+                log.error("Error of script running {} for {}", script, user, e);
+                allOk = false;
             }
         }
-    }
-
-    private String login(RestClient client, EmuProperties.EmuUser user) {
-        AuthResponse response = client.post()
-            .uri("/api/auth/login")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new LoginRequest(user.name(), user.password()))
-            .retrieve()
-            .body(AuthResponse.class);
-        if (response == null || response.token() == null) {
-            throw new IllegalStateException("No token returned for " + user.name());
-        }
-        return response.token();
-    }
-
-    private BayeuxClient connect(WebSocketContainer container, String name, String token) {
-        WebSocketTransport transport = new WebSocketTransport(null, null, container);
-        BayeuxClient client = new BayeuxClient(properties.cometdUrl(), transport);
-        Map<String, Object> handshakeFields = Map.of("auth", Map.of("token", token));
-        client.handshake(handshakeFields, message -> {
-            if (message.isSuccessful()) {
-                log.info("CometD handshake successful for {}", name);
-            } else {
-                log.error("CometD handshake failed for {}: {}", name, message);
-            }
-        });
-        return client;
-    }
-
-    private record LoginRequest(String username, String password) {
-    }
-
-    private record AuthResponse(String token) {
     }
 }
