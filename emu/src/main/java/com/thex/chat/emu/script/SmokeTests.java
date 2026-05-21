@@ -15,24 +15,24 @@ public class SmokeTests {
     ) {
         this.connectionTest = new Script("connection smoke test")
             .add(conn.connect())
-            .add(util.waitNms(), 15000)
+            .add(util.waitNs(), 15)
             .add(conn.disconnect())
-            .add(util.waitNms(), 3000);
+            .add(util.waitNs(), 3);
 
         this.roomTest = new Script("room smoke test")
             .add(conn.connect())
             .add(room.join())
-            .add(util.waitNms(), 15000)
+            .add(util.waitNs(), 15)
             .add(room.leave())
             .add(conn.disconnect())
-            .add(util.waitNms(), 3000);
+            .add(util.waitNs(), 3);
 
         this.roomNoLeaveTest = new Script("room smoke no leave test")
             .add(conn.connect())
             .add(room.join())
-            .add(util.waitNms(), 5000)
+            .add(util.waitNs(), 5)
             .add(conn.disconnect())
-            .add(util.waitNms(), 3000);
+            .add(util.waitNs(), 3);
     }
 
     public Script connectionTest() {
