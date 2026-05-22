@@ -146,6 +146,17 @@ export function CometDProvider({children}) {
         setCurrentRoom(roomId);
     }, []);
 
+    const sendChatMessage = useCallback((text) => {
+        const cometd = cometdRef.current;
+        if (!cometd || cancelledRef.current) return false;
+        const roomId = currentRoomRef.current;
+        if (!roomId) return false;
+        const trimmed = (text ?? '').trim();
+        if (!trimmed) return false;
+        cometd.publish('/service/room', {action: 'send', roomId, text: trimmed});
+        return true;
+    }, []);
+
     const leaveRoom = useCallback(() => {
         const cometd = cometdRef.current;
         if (!cometd || !currentRoom || cancelledRef.current) return;
@@ -166,7 +177,7 @@ export function CometDProvider({children}) {
     }, [currentRoom]);
 
     return (
-        <CometDContext.Provider value={{connected, error, visitors, currentRoom, joinRoom, leaveRoom}}>
+        <CometDContext.Provider value={{connected, error, visitors, currentRoom, joinRoom, leaveRoom, sendChatMessage}}>
             {children}
         </CometDContext.Provider>
     );

@@ -31,5 +31,14 @@ public class RoomServiceDispatcher extends AbstractServiceDispatcher {
                 return CallResult.optional();
             }
         );
+
+        addMethodHandler(
+            "send",
+            (connectionInfo, parameters) -> {
+                log.trace("RoomServiceDispatcher send {}; {}", connectionInfo, parameters);
+                roomService.send(connectionInfo, parameters);
+                return CallResult.optional();
+            }
+        );
     }
 }

@@ -1,5 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {useCometD, visitorKey} from '../context/CometDContext';
+import {useAuth} from '../context/AuthContext';
 import './Chat.css';
 
 const ROOM_ID = 'general';
@@ -11,7 +13,9 @@ const STYLE_LETTERS = [
 ];
 
 export default function Chat() {
-    const {connected, error, visitors, currentRoom, joinRoom} = useCometD();
+    const {connected, error, visitors, currentRoom, joinRoom, sendChatMessage} = useCometD();
+    const {user} = useAuth();
+    const navigate = useNavigate();
     const editorRef = useRef(null);
     const savedRangeRef = useRef(null);
     const styleControlRef = useRef(null);
@@ -70,9 +74,25 @@ export default function Chat() {
         setStylePopoverOpen(false);
     };
 
+    const handleSend = () => {
+        if (!user) {
+            navigate('/signup');
+            return;
+        }
+        if (!editorRef.current) return;
+        const text = editorRef.current.innerText.replace(/\s+/g, ' ').trim();
+        if (!text) return;
+        const sent = sendChatMessage(text);
+        if (sent) {
+            editorRef.current.innerHTML = '';
+            savedRangeRef.current = null;
+        }
+    };
+
     const handleEditorKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
+            handleSend();
         }
     };
 
@@ -112,7 +132,7 @@ export default function Chat() {
             </aside>
             <section className="messages-pane">
                 <div className="messages-area"></div>
-                <form className="message-bar" onSubmit={(e) => e.preventDefault()}>
+                <form className="message-bar" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
                     <div className="format-toolbar">
                         <input
                             type="color"
