@@ -20,15 +20,15 @@ public class RoomNotifier {
         RoomVisitors roomVisitors = new RoomVisitors(connectionId, roomId, visitors);
         rabbitTemplate.convertAndSend(
             RabbitConfig.EXCHANGE,
-            "room.visitors",
+            "client.room.visitors",
             roomVisitors
         );
-        log.info("Published room.visitors {}", roomVisitors);
+        log.info("Published client.room.visitors {}", roomVisitors);
     }
 
     public void sendRoomVisitorUpdate(RoomVisitorUpdate update) {
-        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "room.visitor.update", update);
-        log.info("Published room.visitor.update {}", update);
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "client.room.visitor.update", update);
+        log.info("Published client.room.visitor.update {}", update);
     }
 
     public void notifyVisitorJoined(Collection<ConnectionInfo> recipients, String roomId, UserInfo user) {
@@ -51,5 +51,10 @@ public class RoomNotifier {
                 RoomVisitorUpdate.Action.LEFT
             )
         );
+    }
+
+    public void notifyRoomMessage(RoomMessageDelivery delivery) {
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "client.room.message.delivery", delivery);
+        log.info("Published client.room.message.delivery {}", delivery);
     }
 }

@@ -2,6 +2,7 @@ package com.thex.chat.chatapi.config;
 
 import com.thex.chat.chatapi.messaging.JoinRoomRequest;
 import com.thex.chat.chatapi.messaging.LeaveRoomRequest;
+import com.thex.chat.chatapi.messaging.RoomMessageDelivery;
 import com.thex.chat.chatapi.messaging.RoomVisitorUpdate;
 import com.thex.chat.chatapi.messaging.RoomVisitors;
 import com.thex.chat.chatapi.messaging.SendRoomMessageRequest;
@@ -22,6 +23,7 @@ public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
     public static final String ROOM_VISITORS_QUEUE = "chatapi.room-visitors";
+    public static final String ROOM_MESSAGES_QUEUE = "chatapi.room-messages";
 
     @Bean
     public TopicExchange chatEventsExchange() {
@@ -35,12 +37,22 @@ public class RabbitConfig {
 
     @Bean
     public Binding roomVisitorsBinding(Queue roomVisitorsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomVisitorsQueue).to(chatEventsExchange).with("room.visitors");
+        return BindingBuilder.bind(roomVisitorsQueue).to(chatEventsExchange).with("client.room.visitors");
     }
 
     @Bean
     public Binding roomVisitorUpdateBinding(Queue roomVisitorsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomVisitorsQueue).to(chatEventsExchange).with("room.visitor.update");
+        return BindingBuilder.bind(roomVisitorsQueue).to(chatEventsExchange).with("client.room.visitor.update");
+    }
+
+    @Bean
+    public Queue roomMessagesQueue() {
+        return new Queue(ROOM_MESSAGES_QUEUE, true);
+    }
+
+    @Bean
+    public Binding roomMessageDeliveryBinding(Queue roomMessagesQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomMessagesQueue).to(chatEventsExchange).with("client.room.message.delivery");
     }
 
     @Bean
@@ -52,7 +64,8 @@ public class RabbitConfig {
             "LeaveRoomRequest", LeaveRoomRequest.class,
             "RoomVisitors", RoomVisitors.class,
             "RoomVisitorUpdate", RoomVisitorUpdate.class,
-            "SendRoomMessageRequest", SendRoomMessageRequest.class
+            "SendRoomMessageRequest", SendRoomMessageRequest.class,
+            "RoomMessageDelivery", RoomMessageDelivery.class
         ));
         classMapper.setTrustedPackages("com.thex.chat.chatapi.messaging");
         classMapper.afterPropertiesSet();

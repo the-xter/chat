@@ -12,13 +12,24 @@ const STYLE_LETTERS = [
     {letter: 'U', command: 'underline', className: 'style-underline'},
 ];
 
+function formatTime(isoString) {
+    try {
+        const d = new Date(isoString);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    } catch {
+        return '';
+    }
+}
+
 export default function Chat() {
-    const {connected, error, visitors, currentRoom, joinRoom, sendChatMessage} = useCometD();
+    const {connected, error, visitors, messages, currentRoom, joinRoom, sendChatMessage} = useCometD();
     const {user} = useAuth();
     const navigate = useNavigate();
     const editorRef = useRef(null);
     const savedRangeRef = useRef(null);
     const styleControlRef = useRef(null);
+    const messagesAreaRef = useRef(null);
     const [stylePopoverOpen, setStylePopoverOpen] = useState(false);
     const [selectedStyle, setSelectedStyle] = useState('A');
 
@@ -27,6 +38,11 @@ export default function Chat() {
             joinRoom(ROOM_ID);
         }
     }, [connected, currentRoom, joinRoom]);
+
+    useEffect(() => {
+        const el = messagesAreaRef.current;
+        if (el) el.scrollTop = el.scrollHeight;
+    }, [messages]);
 
     useEffect(() => {
         if (!stylePopoverOpen) return;
@@ -131,7 +147,22 @@ export default function Chat() {
                 </ul>
             </aside>
             <section className="messages-pane">
-                <div className="messages-area"></div>
+                <div className="messages-area" ref={messagesAreaRef}>
+                    {messages.map((msg, idx) => {
+                        const key = msg.messageId ?? `tmp:${idx}`;
+                        const isOwn = user && msg.sender && msg.sender.id != null && msg.sender.id === user.id;
+                        const time = msg.createdAt ? formatTime(msg.createdAt) : '';
+                        return (
+                            <div key={key} className={`message${isOwn ? ' message-own' : ''}`}>
+                                <div className="message-meta">
+                                    <span className="message-sender">{msg.sender?.name ?? 'unknown'}</span>
+                                    {time && <span className="message-time">{time}</span>}
+                                </div>
+                                <div className="message-text">{msg.text}</div>
+                            </div>
+                        );
+                    })}
+                </div>
                 <form className="message-bar" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
                     <div className="format-toolbar">
                         <input

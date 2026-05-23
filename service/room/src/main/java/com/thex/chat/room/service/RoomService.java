@@ -3,6 +3,7 @@ package com.thex.chat.room.service;
 import com.thex.chat.room.dto.ConnectionInfo;
 import com.thex.chat.room.messaging.JoinRoomRequest;
 import com.thex.chat.room.messaging.LeaveRoomRequest;
+import com.thex.chat.room.messaging.RoomMessageDelivery;
 import com.thex.chat.room.messaging.RoomMessageEvent;
 import com.thex.chat.room.messaging.RoomNotifier;
 import lombok.RequiredArgsConstructor;
@@ -103,8 +104,15 @@ public class RoomService {
         if (recipients.isEmpty()) {
             return;
         }
-        log.info("Delivering message {} in room '{}' from {} to {} connection(s): {}",
-            event.messageId(), event.roomId(), event.connectionInfo(), recipients.size(), recipients);
+
+        roomNotifier.notifyRoomMessage(new RoomMessageDelivery(
+            recipients.stream().map(ConnectionInfo::connectionId).toList(),
+            event.messageId(),
+            event.roomId(),
+            event.connectionInfo().user(),
+            event.text(),
+            event.createdAt()
+        ));
     }
 
     void handleDisconnect(ConnectionInfo connection) {

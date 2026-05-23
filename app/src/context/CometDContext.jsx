@@ -14,11 +14,13 @@ export function CometDProvider({children}) {
     const [connected, setConnected] = useState(false);
     const [error, setError] = useState(null);
     const [visitors, setVisitors] = useState([]);
+    const [messages, setMessages] = useState([]);
     const [currentRoom, setCurrentRoom] = useState(null);
 
     const cometdRef = useRef(null);
     const roomSubRef = useRef(null);
     const roomVisitorSubRef = useRef(null);
+    const roomMessageSubRef = useRef(null);
     const cancelledRef = useRef(false);
     const currentRoomRef = useRef(null);
     currentRoomRef.current = currentRoom;
@@ -100,8 +102,10 @@ export function CometDProvider({children}) {
             cometdRef.current = null;
             roomSubRef.current = null;
             roomVisitorSubRef.current = null;
+            roomMessageSubRef.current = null;
             setConnected(false);
             setVisitors([]);
+            setMessages([]);
             setCurrentRoom(null);
         };
     }, [user?.token]);
@@ -118,6 +122,11 @@ export function CometDProvider({children}) {
             cometd.unsubscribe(roomVisitorSubRef.current);
             roomVisitorSubRef.current = null;
         }
+        if (roomMessageSubRef.current) {
+            cometd.unsubscribe(roomMessageSubRef.current);
+            roomMessageSubRef.current = null;
+        }
+        setMessages([]);
 
         roomSubRef.current = cometd.subscribe('/room/' + roomId, (message) => {
             if (!cancelledRef.current) {
@@ -139,6 +148,18 @@ export function CometDProvider({children}) {
                     return prev.filter(v => visitorKey(v) !== key);
                 }
                 return prev;
+            });
+        });
+
+        roomMessageSubRef.current = cometd.subscribe('/room/' + roomId + '/message', (message) => {
+            if (cancelledRef.current) return;
+            const data = message.data;
+            if (!data) return;
+            setMessages(prev => {
+                if (data.messageId != null && prev.some(m => m.messageId === data.messageId)) {
+                    return prev;
+                }
+                return [...prev, data];
             });
         });
 
@@ -171,13 +192,18 @@ export function CometDProvider({children}) {
             cometd.unsubscribe(roomVisitorSubRef.current);
             roomVisitorSubRef.current = null;
         }
+        if (roomMessageSubRef.current) {
+            cometd.unsubscribe(roomMessageSubRef.current);
+            roomMessageSubRef.current = null;
+        }
 
         setCurrentRoom(null);
         setVisitors([]);
+        setMessages([]);
     }, [currentRoom]);
 
     return (
-        <CometDContext.Provider value={{connected, error, visitors, currentRoom, joinRoom, leaveRoom, sendChatMessage}}>
+        <CometDContext.Provider value={{connected, error, visitors, messages, currentRoom, joinRoom, leaveRoom, sendChatMessage}}>
             {children}
         </CometDContext.Provider>
     );

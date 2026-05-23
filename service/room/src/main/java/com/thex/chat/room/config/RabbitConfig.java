@@ -64,7 +64,8 @@ public class RabbitConfig {
             "RoomVisitors", RoomVisitors.class,
             "RoomVisitorUpdate", RoomVisitorUpdate.class,
             "ConnectionEvent", ConnectionEvent.class,
-            "RoomMessageEvent", RoomMessageEvent.class
+            "RoomMessageEvent", RoomMessageEvent.class,
+            "RoomMessageDelivery", RoomMessageDelivery.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();
