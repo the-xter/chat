@@ -7,12 +7,11 @@ import com.thex.chat.chatapi.dto.UserInfo;
 import com.thex.chat.chatapi.dto.UserType;
 import com.thex.chat.chatapi.messaging.JoinRoomRequest;
 import com.thex.chat.chatapi.messaging.LeaveRoomRequest;
+import com.thex.chat.chatapi.messaging.SendRoomMessageRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class RoomService {
     private static final String ROOM_ID = "roomId";
@@ -32,7 +31,7 @@ public class RoomService {
         notifier.notifyLeave(new LeaveRoomRequest(connectionInfo, getRoom(parameters)));
     }
 
-    public void send(ConnectionInfo connectionInfo, ParametersWrapper parameters) throws CallException {
+    public void sendMessage(ConnectionInfo connectionInfo, ParametersWrapper parameters) throws CallException {
         UserInfo user = connectionInfo.user();
         if (user == null || user.type() != UserType.REGISTERED) {
             throw new CallException(ERROR_GUEST_NOT_ALLOWED);
@@ -45,7 +44,7 @@ public class RoomService {
             throw new CallException(ERROR_TEXT_EMPTY);
         }
 
-        log.info("chat message from {} in room '{}': {}", user.name(), roomId, text);
+        notifier.notifySendMessage(new SendRoomMessageRequest(connectionInfo, roomId, text));
     }
 
     private String getRoom(ParametersWrapper parameters) throws CallException {

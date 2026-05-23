@@ -36,7 +36,7 @@ public class RoomServiceDispatcher extends AbstractServiceDispatcher {
             "send",
             (connectionInfo, parameters) -> {
                 log.trace("RoomServiceDispatcher send {}; {}", connectionInfo, parameters);
-                roomService.send(connectionInfo, parameters);
+                roomService.sendMessage(connectionInfo, parameters);
                 return CallResult.optional();
             }
         );

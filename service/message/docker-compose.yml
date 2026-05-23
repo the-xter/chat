@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres
+    container_name: message-postgres
+    environment:
+      POSTGRES_DB: message_db
+      POSTGRES_USER: message_user
+      POSTGRES_PASSWORD: message_pass
+      PGDATA: /data/postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - /var/storage/docker/message-postgres:/data/postgres

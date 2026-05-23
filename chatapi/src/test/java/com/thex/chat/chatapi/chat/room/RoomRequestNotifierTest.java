@@ -6,6 +6,7 @@ import com.thex.chat.chatapi.dto.UserInfo;
 import com.thex.chat.chatapi.dto.UserType;
 import com.thex.chat.chatapi.messaging.JoinRoomRequest;
 import com.thex.chat.chatapi.messaging.LeaveRoomRequest;
+import com.thex.chat.chatapi.messaging.SendRoomMessageRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,6 +46,16 @@ class RoomRequestNotifierTest {
         notifier.notifyLeave(request);
 
         verify(rabbitTemplate).convertAndSend(RabbitConfig.EXCHANGE, "room.leave.request", request);
+        verifyNoMoreInteractions(rabbitTemplate);
+    }
+
+    @Test
+    void notifySend_sendsToChatEventsExchange_withSendMessageRoutingKey() {
+        SendRoomMessageRequest request = new SendRoomMessageRequest(CONNECTION, "lobby", "hello");
+
+        notifier.notifySendMessage(request);
+
+        verify(rabbitTemplate).convertAndSend(RabbitConfig.EXCHANGE, "room.message.send", request);
         verifyNoMoreInteractions(rabbitTemplate);
     }
 }

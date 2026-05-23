@@ -7,6 +7,7 @@ import com.thex.chat.chatapi.dto.UserInfo;
 import com.thex.chat.chatapi.dto.UserType;
 import com.thex.chat.chatapi.messaging.JoinRoomRequest;
 import com.thex.chat.chatapi.messaging.LeaveRoomRequest;
+import com.thex.chat.chatapi.messaging.SendRoomMessageRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -76,37 +76,37 @@ class RoomServiceTest {
     }
 
     @Test
-    void send_allows_registeredUserWithText() {
-        assertThatCode(() -> service.send(CONNECTION, params("roomId", "lobby", "text", "hello")))
-            .doesNotThrowAnyException();
-        verifyNoInteractions(notifier);
+    void send_publishesSendMessageRequestForRoom() throws Exception {
+        service.sendMessage(CONNECTION, params("roomId", "lobby", "text", "hello"));
+
+        verify(notifier).notifySendMessage(new SendRoomMessageRequest(CONNECTION, "lobby", "hello"));
     }
 
     @Test
-    void send_throws_forGuest() {
-        assertThatThrownBy(() -> service.send(GUEST_CONNECTION, params("roomId", "lobby", "text", "hello")))
+    void send_Message_throws_forGuest() {
+        assertThatThrownBy(() -> service.sendMessage(GUEST_CONNECTION, params("roomId", "lobby", "text", "hello")))
             .isInstanceOf(CallException.class)
             .hasMessage(RoomService.ERROR_GUEST_NOT_ALLOWED);
         verifyNoInteractions(notifier);
     }
 
     @Test
-    void send_throws_whenRoomIdMissing() {
-        assertThatThrownBy(() -> service.send(CONNECTION, params("text", "hello")))
+    void send_Message_throws_whenRoomIdMissing() {
+        assertThatThrownBy(() -> service.sendMessage(CONNECTION, params("text", "hello")))
             .isInstanceOf(CallException.class)
             .hasMessage(RoomService.ERROR_ROOM_NULL);
     }
 
     @Test
-    void send_throws_whenTextMissing() {
-        assertThatThrownBy(() -> service.send(CONNECTION, params("roomId", "lobby")))
+    void send_Message_throws_whenTextMissing() {
+        assertThatThrownBy(() -> service.sendMessage(CONNECTION, params("roomId", "lobby")))
             .isInstanceOf(CallException.class)
             .hasMessage(RoomService.ERROR_TEXT_EMPTY);
     }
 
     @Test
-    void send_throws_whenTextBlank() {
-        assertThatThrownBy(() -> service.send(CONNECTION, params("roomId", "lobby", "text", "   ")))
+    void send_Message_throws_whenTextBlank() {
+        assertThatThrownBy(() -> service.sendMessage(CONNECTION, params("roomId", "lobby", "text", "   ")))
             .isInstanceOf(CallException.class)
             .hasMessage(RoomService.ERROR_TEXT_EMPTY);
     }

@@ -1,10 +1,6 @@
-package com.thex.chat.chatapi.config;
+package com.thex.chat.message.config;
 
-import com.thex.chat.chatapi.messaging.JoinRoomRequest;
-import com.thex.chat.chatapi.messaging.LeaveRoomRequest;
-import com.thex.chat.chatapi.messaging.RoomVisitorUpdate;
-import com.thex.chat.chatapi.messaging.RoomVisitors;
-import com.thex.chat.chatapi.messaging.SendRoomMessageRequest;
+import com.thex.chat.message.messaging.SendRoomMessageRequest;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -21,7 +17,7 @@ import java.util.Map;
 public class RabbitConfig {
 
     public static final String EXCHANGE = "chat.events";
-    public static final String ROOM_VISITORS_QUEUE = "chatapi.room-visitors";
+    public static final String ROOM_MESSAGES_QUEUE = "message.room-messages";
 
     @Bean
     public TopicExchange chatEventsExchange() {
@@ -29,18 +25,13 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue roomVisitorsQueue() {
-        return new Queue(ROOM_VISITORS_QUEUE, true);
+    public Queue roomMessagesQueue() {
+        return new Queue(ROOM_MESSAGES_QUEUE, true);
     }
 
     @Bean
-    public Binding roomVisitorsBinding(Queue roomVisitorsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomVisitorsQueue).to(chatEventsExchange).with("room.visitors");
-    }
-
-    @Bean
-    public Binding roomVisitorUpdateBinding(Queue roomVisitorsQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomVisitorsQueue).to(chatEventsExchange).with("room.visitor.update");
+    public Binding roomMessageSendBinding(Queue roomMessagesQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomMessagesQueue).to(chatEventsExchange).with("room.message.send");
     }
 
     @Bean
@@ -48,13 +39,9 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-            "JoinRoomRequest", JoinRoomRequest.class,
-            "LeaveRoomRequest", LeaveRoomRequest.class,
-            "RoomVisitors", RoomVisitors.class,
-            "RoomVisitorUpdate", RoomVisitorUpdate.class,
             "SendRoomMessageRequest", SendRoomMessageRequest.class
         ));
-        classMapper.setTrustedPackages("com.thex.chat.chatapi.messaging");
+        classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();
         converter.setClassMapper(classMapper);
         return converter;
