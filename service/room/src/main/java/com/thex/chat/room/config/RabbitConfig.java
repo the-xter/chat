@@ -50,6 +50,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding roomMessageNewBinding(Queue roomEventsQueue, TopicExchange chatEventsExchange) {
+        return BindingBuilder.bind(roomEventsQueue).to(chatEventsExchange).with("room.message.new");
+    }
+
+    @Bean
     public MessageConverter messageConverter() {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
@@ -58,7 +63,8 @@ public class RabbitConfig {
             "LeaveRoomRequest", LeaveRoomRequest.class,
             "RoomVisitors", RoomVisitors.class,
             "RoomVisitorUpdate", RoomVisitorUpdate.class,
-            "ConnectionEvent", ConnectionEvent.class
+            "ConnectionEvent", ConnectionEvent.class,
+            "RoomMessageEvent", RoomMessageEvent.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();

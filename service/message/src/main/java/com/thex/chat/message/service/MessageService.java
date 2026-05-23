@@ -2,6 +2,7 @@ package com.thex.chat.message.service;
 
 import com.thex.chat.message.dto.ConnectionInfo;
 import com.thex.chat.message.dto.UserInfo;
+import com.thex.chat.message.messaging.RoomMessageEvent;
 import com.thex.chat.message.messaging.SendRoomMessageRequest;
 import com.thex.chat.message.model.RoomMessage;
 import com.thex.chat.message.repository.RoomMessageRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class MessageService {
 
     private final RoomMessageRepository repository;
+    private final MessageEventNotifier notifier;
 
     public RoomMessage store(SendRoomMessageRequest request) {
         ConnectionInfo connection = request.connectionInfo();
@@ -29,6 +31,15 @@ public class MessageService {
 
         RoomMessage saved = repository.save(entity);
         log.info("Stored room message {}", request);
+
+        notifier.notifyRoomMessage(new RoomMessageEvent(
+            saved.getId(),
+            saved.getRoomId(),
+            saved.getCreatedAt(),
+            request.connectionInfo(),
+            saved.getText()
+        ));
+
         return saved;
     }
 }

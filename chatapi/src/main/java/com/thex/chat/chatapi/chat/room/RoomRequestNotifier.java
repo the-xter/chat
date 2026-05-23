@@ -26,7 +26,7 @@ public class RoomRequestNotifier {
     }
 
     public void notifySendMessage(SendRoomMessageRequest event) {
-        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "room.message.send", event);
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "room.message.send.request", event);
         log.trace("Published send event: {}", event);
     }
 }

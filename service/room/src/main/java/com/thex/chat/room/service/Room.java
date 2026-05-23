@@ -49,6 +49,12 @@ public class Room {
             .toList();
     }
 
+    public Collection<ConnectionInfo> recipientsForMessage(ConnectionInfo sender) {
+        return connections.values().stream()
+            .filter(viewer -> canSeeMessage(viewer, sender))
+            .toList();
+    }
+
     public List<ConnectionInfo> recipientsForLeave(ConnectionInfo leavingConnection) {
         if (isGuest(leavingConnection)) {
             return Collections.emptyList();
@@ -60,6 +66,10 @@ public class Room {
 
     private boolean isVisible(ConnectionInfo viewer, ConnectionInfo subject) {
         return !isGuest(subject);
+    }
+
+    private boolean canSeeMessage(ConnectionInfo viewer, ConnectionInfo messageSender) {
+        return true;
     }
 
     public boolean hasUser(UserInfo user) {

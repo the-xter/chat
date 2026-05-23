@@ -4,6 +4,7 @@ import com.thex.chat.room.config.RabbitConfig;
 import com.thex.chat.room.messaging.ConnectionEvent;
 import com.thex.chat.room.messaging.JoinRoomRequest;
 import com.thex.chat.room.messaging.LeaveRoomRequest;
+import com.thex.chat.room.messaging.RoomMessageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -16,23 +17,28 @@ import org.springframework.stereotype.Component;
 @RabbitListener(queues = RabbitConfig.ROOM_EVENTS_QUEUE)
 public class RoomEventListener {
 
-    private final RoomStateService roomStateService;
+    private final RoomService roomService;
 
     @RabbitHandler
     public void handleJoin(JoinRoomRequest event) {
-        roomStateService.handleJoin(event);
+        roomService.handleJoin(event);
     }
 
     @RabbitHandler
     public void handleLeave(LeaveRoomRequest event) {
-        roomStateService.handleLeave(event);
+        roomService.handleLeave(event);
+    }
+
+    @RabbitHandler
+    public void handleRoomMessage(RoomMessageEvent event) {
+        roomService.handleRoomMessage(event);
     }
 
     @RabbitHandler
     public void handleConnectionEvent(ConnectionEvent event) {
         switch (event.eventType()) {
-            case "CONNECTED" -> roomStateService.handleConnect(event.connection());
-            case "DISCONNECTED" -> roomStateService.handleDisconnect(event.connection());
+            case "CONNECTED" -> roomService.handleConnect(event.connection());
+            case "DISCONNECTED" -> roomService.handleDisconnect(event.connection());
             default -> log.warn("Unknown connection event type: {}", event.eventType());
         }
     }

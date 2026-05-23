@@ -55,7 +55,7 @@ class RoomRequestNotifierTest {
 
         notifier.notifySendMessage(request);
 
-        verify(rabbitTemplate).convertAndSend(RabbitConfig.EXCHANGE, "room.message.send", request);
+        verify(rabbitTemplate).convertAndSend(RabbitConfig.EXCHANGE, "room.message.send.request", request);
         verifyNoMoreInteractions(rabbitTemplate);
     }
 }

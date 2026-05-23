@@ -3,11 +3,13 @@ package com.thex.chat.room.service;
 import com.thex.chat.room.dto.ConnectionInfo;
 import com.thex.chat.room.messaging.JoinRoomRequest;
 import com.thex.chat.room.messaging.LeaveRoomRequest;
+import com.thex.chat.room.messaging.RoomMessageEvent;
 import com.thex.chat.room.messaging.RoomNotifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RoomStateService {
+public class RoomService {
 
     private final RoomNotifier roomNotifier;
     private final ConnectionServiceClient connectionService;
@@ -89,6 +91,20 @@ public class RoomStateService {
             return;
         }
         removeFromRoom(room, leavingConnection);
+    }
+
+    void handleRoomMessage(RoomMessageEvent event) {
+        log.info("room message event {}", event);
+
+        Room room = rooms.get(event.roomId());
+        Collection<ConnectionInfo> recipients = room == null
+            ? List.of()
+            : room.recipientsForMessage(event.connectionInfo());
+        if (recipients.isEmpty()) {
+            return;
+        }
+        log.info("Delivering message {} in room '{}' from {} to {} connection(s): {}",
+            event.messageId(), event.roomId(), event.connectionInfo(), recipients.size(), recipients);
     }
 
     void handleDisconnect(ConnectionInfo connection) {

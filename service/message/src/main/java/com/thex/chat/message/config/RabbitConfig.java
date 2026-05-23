@@ -1,5 +1,6 @@
 package com.thex.chat.message.config;
 
+import com.thex.chat.message.messaging.RoomMessageEvent;
 import com.thex.chat.message.messaging.SendRoomMessageRequest;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -31,7 +32,7 @@ public class RabbitConfig {
 
     @Bean
     public Binding roomMessageSendBinding(Queue roomMessagesQueue, TopicExchange chatEventsExchange) {
-        return BindingBuilder.bind(roomMessagesQueue).to(chatEventsExchange).with("room.message.send");
+        return BindingBuilder.bind(roomMessagesQueue).to(chatEventsExchange).with("room.message.send.request");
     }
 
     @Bean
@@ -39,7 +40,8 @@ public class RabbitConfig {
         var converter = new JacksonJsonMessageConverter();
         var classMapper = new DefaultClassMapper();
         classMapper.setIdClassMapping(Map.of(
-            "SendRoomMessageRequest", SendRoomMessageRequest.class
+            "SendRoomMessageRequest", SendRoomMessageRequest.class,
+            "RoomMessageEvent", RoomMessageEvent.class
         ));
         classMapper.setTrustedPackages("*");
         classMapper.afterPropertiesSet();
